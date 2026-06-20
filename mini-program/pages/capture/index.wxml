@@ -1,0 +1,55 @@
+<view class="page">
+  <view class="page-title">拍照录题</view>
+  <view class="page-subtitle">一张清晰的题目照片，就能生成完整错题解析。</view>
+
+  <view class="capture-hero">
+    <view class="capture-title">录入公考错题</view>
+    <view class="capture-copy">拍照或从相册选择清晰题目图片，由统一 AI 后端直接识别并分析。</view>
+
+    <view class="preview" wx:if="{{imagePath}}">
+      <image class="preview-image" src="{{imagePath}}" mode="aspectFit" bindtap="previewImage" />
+      <view class="preview-actions">
+        <button class="mini-button" bindtap="chooseFromAlbum">重新选择</button>
+        <button class="mini-button danger" bindtap="clearImage">移除</button>
+      </view>
+    </view>
+    <view class="source-actions" wx:else>
+      <button class="primary-button choose-button" bindtap="chooseFromCamera">拍照</button>
+      <button class="secondary-button choose-button" bindtap="chooseFromAlbum">从相册选择</button>
+    </view>
+  </view>
+
+  <view class="section-title">补充信息（可选）</view>
+  <view class="card">
+    <textarea
+      class="textarea"
+      value="{{textHint}}"
+      maxlength="1000"
+      placeholder="例如：我的答案是 A，重点分析为什么会选错。"
+      bindinput="onHintInput"
+    />
+  </view>
+
+  <button class="primary-button analyze-button" bindtap="analyze" disabled="{{loading || !imagePath}}">
+    开始 AI 分析
+  </button>
+
+  <view class="error-card" wx:if="{{errorMessage}}">
+    <view class="error-title">本次分析未完成</view>
+    <view class="error-copy">{{errorMessage}}</view>
+    <button class="secondary-button retry-button" bindtap="analyze" disabled="{{loading || !imagePath}}">重试分析</button>
+  </view>
+
+  <view class="section-title">录题建议</view>
+  <view class="card tips">
+    <view class="tip">完整保留题干、选项和必要图表。</view>
+    <view class="tip">避免反光、阴影和大角度倾斜。</view>
+    <view class="tip">分析结果可在下一页逐项修改后保存。</view>
+  </view>
+</view>
+
+<view class="loading-mask" wx:if="{{loading}}">
+  <icon type="waiting" size="48" color="#ffffff" />
+  <view class="loading-title">{{loadingText}}</view>
+  <view class="loading-subtitle">复杂图表可能需要几十秒，请保持页面开启</view>
+</view>

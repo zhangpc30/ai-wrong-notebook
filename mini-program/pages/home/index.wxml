@@ -1,0 +1,79 @@
+<view class="page">
+  <view class="config-banner" wx:if="{{!backendConfigured}}" bindtap="goSettings">
+    <view>
+      <view class="config-title">请先配置 AI 后端地址</view>
+      <view class="config-copy">配置后即可拍照识题和测试服务连接。</view>
+    </view>
+    <view class="config-action">去设置</view>
+  </view>
+
+  <view class="hero">
+    <view class="hero-kicker">公考 · 事业编 AI 错题复盘</view>
+    <view class="hero-title">把每一道错题，变成下一次得分</view>
+    <view class="hero-copy">拍照识别题目，获得结构化解析、错因与考场快速解法。</view>
+    <button class="hero-button" bindtap="goCapture">拍照录入错题</button>
+  </view>
+
+  <view class="quick-actions">
+    <button class="secondary-button" bindtap="goNotebook">打开错题本</button>
+    <button class="secondary-button" bindtap="goSettings">后端设置</button>
+  </view>
+
+  <view class="section-title">复盘概览</view>
+  <view class="stats-grid">
+    <view class="stat stat-blue">
+      <view class="stat-value">{{total}}</view>
+      <view class="stat-label">错题总数</view>
+    </view>
+    <view class="stat stat-red">
+      <view class="stat-value">{{highPriority}}</view>
+      <view class="stat-label">高优先级</view>
+    </view>
+    <view class="stat stat-orange">
+      <view class="stat-value">{{unmastered}}</view>
+      <view class="stat-label">未掌握</view>
+    </view>
+    <view class="stat stat-green">
+      <view class="stat-value">{{todayNew}}</view>
+      <view class="stat-label">今日新增</view>
+    </view>
+  </view>
+
+  <view class="insights">
+    <view class="card insight">
+      <view class="insight-label">薄弱模块</view>
+      <view class="insight-value">{{weakModule}}</view>
+    </view>
+    <view class="card insight">
+      <view class="insight-label">高频错因</view>
+      <view class="insight-value">{{commonReason}}</view>
+    </view>
+  </view>
+
+  <view class="section-heading">
+    <view class="section-title compact">最近新增</view>
+    <view class="link" bindtap="goNotebook">查看全部</view>
+  </view>
+
+  <view wx:if="{{recent.length}}">
+    <view
+      class="card question-card"
+      wx:for="{{recent}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="openDetail"
+    >
+      <view class="question-meta">{{item.displayMeta}}</view>
+      <view class="question-title">{{item.displayTitle}}</view>
+      <view class="question-footer">
+        <text>掌握 {{item.masteryLevel}} / 5</text>
+        <text>{{item.displayDate}}</text>
+      </view>
+    </view>
+  </view>
+  <view class="empty card home-empty" wx:else>
+    <view class="empty-title">错题本还是空的</view>
+    <view class="empty-copy">拍下第一道错题，AI 会帮你整理题目、错因和复习建议。</view>
+    <button class="secondary-button empty-action" bindtap="goCapture">录入第一道错题</button>
+  </view>
+</view>

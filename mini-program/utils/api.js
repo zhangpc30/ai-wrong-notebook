@@ -1,0 +1,98 @@
+const { getBackendUrl } = require('./config')
+const { normalizeAnalysis } = require('./schema')
+
+function parseErrorBody(data, fallback) {
+  try {
+    const parsed = typeof data === 'string' ? JSON.parse(data) : data
+    return parsed && parsed.error && parsed.error.message
+      ? parsed.error.message
+      : fallback
+  } catch (_) {
+    return fallback
+  }
+}
+
+function networkMessage(error, fallback) {
+  const message = String(error && error.errMsg ? error.errMsg : '')
+  if (/timeout/i.test(message)) return 'AI 分析超时，请稍后重试'
+  if (/fail|network|connect|domain/i.test(message)) return fallback
+  return message || fallback
+}
+
+function healthCheck() {
+  const backendUrl = getBackendUrl()
+  if (!backendUrl) return Promise.reject(new Error('请先配置 AI 后端地址'))
+  return new Promise((resolve, reject) => {
+    wx.request({
+      url: `${backendUrl}/health`,
+      method: 'GET',
+      timeout: 15000,
+      success(res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data)
+        } else {
+          reject(new Error(parseErrorBody(res.data, `健康检查失败：HTTP ${res.statusCode}`)))
+        }
+      },
+      fail(error) {
+        reject(new Error(networkMessage(error, '无法连接 AI 后端')))
+      }
+    })
+  })
+}
+
+function analyzeImage(filePath, textHint = '') {
+  const backendUrl = getBackendUrl()
+  if (!backendUrl) return Promise.reject(new Error('请先在设置页配置 AI 后端地址'))
+  return new Promise((resolve, reject) => {
+    const task = wx.uploadFile({
+      url: `${backendUrl}/api/analyze`,
+      filePath,
+      name: 'image',
+      formData: {
+        textHint,
+        clientType: 'wechat-mini-program',
+        clientVersion: '1.0.0'
+      },
+      timeout: 240000,
+      success(res) {
+        wx.hideNavigationBarLoading()
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          reject(new Error(parseErrorBody(res.data, `分析失败：HTTP ${res.statusCode}`)))
+          return
+        }
+        try {
+          const parsed = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+          const result = normalizeAnalysis(
+            parsed && parsed.data && typeof parsed.data === 'object'
+              ? parsed.data
+              : parsed
+          )
+          if (!result.questionText) {
+            reject(new Error('后端未识别出有效题干，请重新拍摄或裁剪'))
+            return
+          }
+          resolve(result)
+        } catch (_) {
+          reject(new Error('后端返回内容不是有效 JSON'))
+        }
+      },
+      fail(error) {
+        wx.hideNavigationBarLoading()
+        reject(new Error(networkMessage(error, '图片上传失败，无法连接 AI 后端')))
+      }
+    })
+    task.onProgressUpdate(progress => {
+      if (progress.progress < 100) {
+        wx.showNavigationBarLoading()
+      } else {
+        wx.hideNavigationBarLoading()
+      }
+    })
+  })
+}
+
+module.exports = {
+  healthCheck,
+  analyzeImage
+}

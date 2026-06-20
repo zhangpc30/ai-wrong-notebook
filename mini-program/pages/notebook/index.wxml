@@ -1,0 +1,50 @@
+<view class="page">
+  <view class="page-title">错题本</view>
+  <view class="page-subtitle">按模块和关键词快速找到需要复习的题目。</view>
+
+  <view class="filter-card card">
+    <input class="search" value="{{query}}" placeholder="搜索题目、模块、考点或错因" bindinput="onSearch" />
+    <view class="filter-row">
+      <picker range="{{moduleOptions}}" bindchange="onModuleChange">
+        <view class="filter-picker">{{moduleFilter || '全部模块'}}</view>
+      </picker>
+      <picker range="{{masteryOptions}}" value="{{masteryFilter}}" bindchange="onMasteryChange">
+        <view class="filter-picker">{{masteryOptions[masteryFilter]}}</view>
+      </picker>
+    </view>
+    <view class="filter-footer">
+      <view class="clear-filter" bindtap="clearFilters">清除筛选</view>
+    </view>
+  </view>
+
+  <view class="result-count">共 {{filtered.length}} 道错题</view>
+
+  <view wx:if="{{filtered.length}}">
+    <view
+      class="card question-card"
+      wx:for="{{filtered}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="openDetail"
+    >
+      <view class="question-top">
+        <view class="question-meta">{{item.displayMeta}}</view>
+        <view class="priority priority-{{item.reviewPriority === '高' ? 'high' : 'normal'}}">
+          {{item.reviewPriority || '未设优先级'}}
+        </view>
+      </view>
+      <view class="question-title">{{item.questionText}}</view>
+      <view class="knowledge" wx:if="{{item.knowledgeText}}">{{item.knowledgeText}}</view>
+      <view class="mistake" wx:if="{{item.mistakeReason}}">错因：{{item.mistakeReason}}</view>
+      <view class="question-footer">
+        <text>掌握 {{item.masteryLevel}} / 5</text>
+        <text>{{item.displayDate}}</text>
+      </view>
+      <button class="delete-item" data-id="{{item.id}}" catchtap="deleteItem">删除</button>
+    </view>
+  </view>
+  <view class="empty card" wx:else>
+    <view class="empty-title">暂时没有匹配的错题</view>
+    <view class="empty-copy">换一个关键词或清除筛选后再看看。</view>
+  </view>
+</view>

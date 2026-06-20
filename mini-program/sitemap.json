@@ -1,0 +1,9 @@
+{
+  "desc": "AI 公考错题本页面索引配置",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}

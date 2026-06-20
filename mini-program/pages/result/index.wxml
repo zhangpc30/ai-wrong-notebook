@@ -1,0 +1,130 @@
+<view class="page">
+  <view class="result-intro card">
+    <view class="result-title">检查后再保存</view>
+    <view class="muted">AI 结果可能有误，考试类型、答案和解析都可以修改。</view>
+  </view>
+
+  <view class="quality-warning" wx:if="{{qualityNeedsReview}}">
+    <view class="quality-title">AI 结果需要人工核对</view>
+    <view class="quality-copy">请重点检查题干、答案和解析后再保存。</view>
+    <view class="quality-item" wx:for="{{qualityWarnings}}" wx:key="*this">{{item}}</view>
+  </view>
+
+  <image
+    wx:if="{{imagePath}}"
+    class="question-image"
+    src="{{imagePath}}"
+    mode="aspectFit"
+    bindtap="previewImage"
+  />
+
+  <view class="section-title">分类信息</view>
+  <view class="card">
+    <view class="field">
+      <text class="field-label">考试类型</text>
+      <picker range="{{examTypes}}" data-field="examType" data-source="examTypes" bindchange="onPickerChange">
+        <view class="picker">{{form.examType || '请选择考试类型'}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="field-label">试卷类型</text>
+      <picker range="{{paperTypes}}" data-field="paperType" data-source="paperTypes" bindchange="onPickerChange">
+        <view class="picker">{{form.paperType || '请选择试卷类型'}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="field-label">模块</text>
+      <picker range="{{modules}}" data-field="module" data-source="modules" bindchange="onPickerChange">
+        <view class="picker">{{form.module || '请选择模块'}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="field-label">题型</text>
+      <input class="input" value="{{form.questionType}}" data-field="questionType" bindinput="onTextInput" placeholder="例如：定义判断" />
+    </view>
+    <view class="field">
+      <text class="field-label">考点</text>
+      <input class="input" value="{{knowledgePointsText}}" bindinput="onKnowledgeInput" placeholder="多个考点用顿号分隔" />
+    </view>
+  </view>
+
+  <view class="section-title">题目与答案</view>
+  <view class="card">
+    <view class="field">
+      <text class="field-label">题目原文</text>
+      <textarea class="textarea large" value="{{form.questionText}}" data-field="questionText" bindinput="onTextInput" />
+    </view>
+    <view class="field">
+      <text class="field-label">选项（每行一项）</text>
+      <textarea class="textarea" value="{{optionsText}}" bindinput="onOptionsInput" placeholder="A.&#10;B.&#10;C.&#10;D." />
+    </view>
+    <view class="answer-grid">
+      <view class="field">
+        <text class="field-label">我的答案</text>
+        <input class="input" value="{{form.myAnswer}}" data-field="myAnswer" bindinput="onTextInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">正确答案</text>
+        <input class="input" value="{{form.correctAnswer}}" data-field="correctAnswer" bindinput="onTextInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">解析与复盘</view>
+  <view class="card">
+    <view class="field">
+      <text class="field-label">标准解析</text>
+      <textarea class="textarea" value="{{form.standardAnalysis}}" data-field="standardAnalysis" bindinput="onTextInput" />
+    </view>
+    <view class="field">
+      <text class="field-label">快速解法</text>
+      <textarea class="textarea" value="{{form.fastSolution}}" data-field="fastSolution" bindinput="onTextInput" />
+    </view>
+    <view class="field">
+      <text class="field-label">错因分析</text>
+      <textarea class="textarea" value="{{form.mistakeReason}}" data-field="mistakeReason" bindinput="onTextInput" />
+    </view>
+    <view class="field">
+      <text class="field-label">题目陷阱</text>
+      <textarea class="textarea" value="{{form.trap}}" data-field="trap" bindinput="onTextInput" />
+    </view>
+    <view class="field">
+      <text class="field-label">同类题识别方法</text>
+      <textarea class="textarea" value="{{form.similarPattern}}" data-field="similarPattern" bindinput="onTextInput" />
+    </view>
+    <view class="field">
+      <text class="field-label">复盘建议</text>
+      <textarea class="textarea" value="{{form.reviewSuggestion}}" data-field="reviewSuggestion" bindinput="onTextInput" />
+    </view>
+  </view>
+
+  <view class="section-title">复习属性</view>
+  <view class="card">
+    <view class="field">
+      <text class="field-label">难度</text>
+      <picker range="{{difficulties}}" data-field="difficulty" data-source="difficulties" bindchange="onPickerChange">
+        <view class="picker">{{form.difficulty || '请选择难度'}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="field-label">复习优先级</text>
+      <picker range="{{priorities}}" data-field="reviewPriority" data-source="priorities" bindchange="onPickerChange">
+        <view class="picker">{{form.reviewPriority || '请选择优先级'}}</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="field-label">掌握程度</text>
+      <picker range="{{masteryLevels}}" data-field="masteryLevel" data-source="masteryLevels" bindchange="onPickerChange">
+        <view class="picker">{{form.masteryLevel}} / 5</view>
+      </picker>
+    </view>
+    <view class="field">
+      <text class="field-label">我的备注</text>
+      <textarea class="textarea" value="{{notes}}" bindinput="onNotesInput" placeholder="记录易错点或下次复习动作" />
+    </view>
+  </view>
+
+  <button class="primary-button save-button" loading="{{saving}}" bindtap="save">
+    {{editId ? '保存修改' : '保存到错题本'}}
+  </button>
+</view>

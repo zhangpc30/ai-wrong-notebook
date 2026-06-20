@@ -1,0 +1,103 @@
+<view class="page" wx:if="{{question}}">
+  <image
+    wx:if="{{question.imagePath}}"
+    class="question-image"
+    src="{{question.imagePath}}"
+    mode="aspectFit"
+    bindtap="previewImage"
+  />
+
+  <view class="summary card">
+    <view class="summary-meta">{{question.module || '未分类'}} · {{question.questionType || '未设置题型'}}</view>
+    <view class="summary-title">{{question.questionText}}</view>
+    <view class="tag-row" wx:if="{{knowledgeText}}">
+      <view class="tag">{{knowledgeText}}</view>
+    </view>
+    <view class="summary-grid">
+      <view>
+        <view class="summary-label">复习优先级</view>
+        <view class="summary-value">{{question.reviewPriority || '未设置'}}</view>
+      </view>
+      <view>
+        <view class="summary-label">掌握程度</view>
+        <view class="summary-value">{{question.masteryLevel}} / 5</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">题目与答案</view>
+  <view class="card detail-card">
+    <view class="detail-label">题目原文</view>
+    <view class="detail-text">{{question.questionText}}</view>
+    <view class="detail-block" wx:if="{{question.options.length}}">
+      <view class="detail-label">选项</view>
+      <view class="option" wx:for="{{question.options}}" wx:key="*this">{{item}}</view>
+    </view>
+    <view class="answer-grid">
+      <view>
+        <view class="detail-label">我的答案</view>
+        <view class="answer mine">{{question.myAnswer || '未填写'}}</view>
+      </view>
+      <view>
+        <view class="detail-label">正确答案</view>
+        <view class="answer correct">{{question.correctAnswer || '待补充'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">解析与复盘</view>
+  <view class="card detail-card">
+    <view class="detail-block">
+      <view class="detail-label">标准解析</view>
+      <view class="detail-text">{{question.standardAnalysis || question.analysis || '暂无'}}</view>
+    </view>
+    <view class="detail-block">
+      <view class="detail-label">快速解法</view>
+      <view class="detail-text">{{question.fastSolution || '暂无'}}</view>
+    </view>
+    <view class="detail-block">
+      <view class="detail-label">错因分析</view>
+      <view class="detail-text">{{question.mistakeReason || '暂无'}}</view>
+    </view>
+    <view class="detail-block">
+      <view class="detail-label">题目陷阱</view>
+      <view class="detail-text">{{question.trap || '暂无'}}</view>
+    </view>
+    <view class="detail-block">
+      <view class="detail-label">同类题识别方法</view>
+      <view class="detail-text">{{question.similarPattern || '暂无'}}</view>
+    </view>
+    <view class="detail-block">
+      <view class="detail-label">复盘建议</view>
+      <view class="detail-text">{{question.reviewSuggestion || '暂无'}}</view>
+    </view>
+  </view>
+
+  <view class="section-title">复习状态</view>
+  <view class="card review-editor">
+    <view class="field">
+      <view class="field-label">掌握程度</view>
+      <picker range="{{masteryLevels}}" value="{{question.masteryLevel - 1}}" bindchange="onMasteryChange">
+        <view class="picker">{{question.masteryLevel}} / 5</view>
+      </picker>
+    </view>
+    <view class="field">
+      <view class="field-label">我的备注</view>
+      <textarea
+        class="textarea"
+        value="{{notesDraft}}"
+        maxlength="2000"
+        placeholder="记录易错点或下次复习动作"
+        bindinput="onNotesInput"
+      />
+    </view>
+    <button class="primary-button" bindtap="saveReviewState">保存复习状态</button>
+  </view>
+
+  <view class="actions">
+    <button class="secondary-button" bindtap="edit">编辑</button>
+    <button class="secondary-button" loading="{{loading}}" bindtap="reanalyze">重新分析</button>
+  </view>
+  <button class="secondary-button back-button" bindtap="backToNotebook">返回错题本</button>
+  <button class="danger-button delete-button" bindtap="remove">删除错题</button>
+</view>
