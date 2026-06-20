@@ -18,8 +18,6 @@ test('health and request validation do not require a model call', async () => {
   try {
     const health = await fetch(`${baseUrl}/health`);
     assert.equal(health.status, 200);
-    assert.match(health.headers.get('cache-control') || '', /no-store/);
-    assert.equal(health.headers.get('etag'), null);
     assert.equal((await health.json()).status, 'ok');
 
     const invalid = await fetch(`${baseUrl}/api/analyze`, {
@@ -29,17 +27,6 @@ test('health and request validation do not require a model call', async () => {
     });
     assert.equal(invalid.status, 400);
     assert.equal((await invalid.json()).error.code, 'INVALID_REQUEST');
-
-    const staleToken = await fetch(`${baseUrl}/api/analyze`, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer stale-token',
-        'Content-Type': 'application/json',
-      },
-      body: '{}',
-    });
-    assert.equal(staleToken.status, 400);
-    assert.equal((await staleToken.json()).error.code, 'INVALID_REQUEST');
   } finally {
     await new Promise((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),

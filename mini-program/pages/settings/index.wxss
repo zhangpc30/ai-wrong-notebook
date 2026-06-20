@@ -18,16 +18,11 @@
 .button-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: stretch;
   gap: 18rpx;
   margin-top: 24rpx;
 }
 
 .button-row button {
-  width: 100%;
-  min-width: 0;
-  padding-right: 12rpx;
-  padding-left: 12rpx;
   min-height: 84rpx;
   font-size: 26rpx;
 }
@@ -65,7 +60,6 @@
 .backup-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: stretch;
   gap: 14rpx;
 }
 
@@ -76,8 +70,6 @@
 }
 
 .backup-actions .secondary-button {
-  width: 100%;
-  min-width: 0;
   padding: 0 12rpx;
   font-size: 23rpx;
 }
@@ -125,21 +117,16 @@
 }
 
 .cloud-actions {
-  width: 100%;
   gap: 14rpx;
 }
 
 .cloud-actions .primary-button {
   flex: 2;
-  width: 100%;
-  min-width: 0;
   min-height: 78rpx;
 }
 
 .cloud-actions .secondary-button {
   flex: 1;
-  width: 100%;
-  min-width: 0;
   min-height: 78rpx;
 }
 

@@ -8,34 +8,22 @@ page {
 
 button {
   box-sizing: border-box;
-  display: grid;
-  place-items: center;
-  width: auto;
-  min-width: 0;
-  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 0;
   margin-left: 0;
-  padding-right: 24rpx;
-  padding-left: 24rpx;
+  padding: 0 28rpx;
   overflow: hidden;
   font-size: 28rpx;
   font-weight: 650;
   line-height: 1.2;
   text-align: center;
-  white-space: nowrap;
   border-radius: 18rpx;
 }
 
 button::after {
   border: 0;
-}
-
-.primary-button,
-.secondary-button,
-.danger-button {
-  margin-right: 0;
-  margin-left: 0;
-  text-align: center;
 }
 
 button[disabled] {

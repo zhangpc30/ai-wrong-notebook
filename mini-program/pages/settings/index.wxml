@@ -1,13 +1,24 @@
 <view class="page">
   <view class="page-title">设置</view>
-  <view class="page-subtitle">管理 AI 服务状态、本地数据与隐私选项。</view>
+  <view class="page-subtitle">管理 AI 服务地址、本地数据与隐私选项。</view>
 
   <view class="section-title">AI 后端</view>
   <view class="card">
-    <view class="field-label">固定服务地址</view>
-    <view class="current-url">{{backendUrl}}</view>
-    <view class="hint">服务地址已内置，小程序不会读取或使用本地保存的旧地址。</view>
-    <button class="primary-button" loading="{{testing}}" bindtap="testBackend">测试连接</button>
+    <view class="field">
+      <text class="field-label">后端服务地址</text>
+      <input
+        class="input"
+        value="{{backendUrl}}"
+        placeholder="https://ai.example.com"
+        bindinput="onUrlInput"
+      />
+    </view>
+    <view class="hint">小程序只上传图片到你的后端，不保存模型 API Key。</view>
+    <view class="current-url">当前地址：{{backendUrl || '未配置'}}</view>
+    <view class="button-row">
+      <button class="secondary-button" loading="{{testing}}" bindtap="testBackend">测试连接</button>
+      <button class="primary-button" bindtap="saveBackend">保存地址</button>
+    </view>
     <view class="status" wx:if="{{status}}">{{status}}</view>
   </view>
 

@@ -1,6 +1,6 @@
 const { getBackendUrl } = require('./config')
 const { normalizeAnalysis } = require('./schema')
-const { getAccessToken, logout } = require('./auth')
+const { getAccessToken } = require('./auth')
 
 function parseErrorBody(data, fallback) {
   try {
@@ -15,11 +15,8 @@ function parseErrorBody(data, fallback) {
 
 function networkMessage(error, fallback) {
   const message = String(error && error.errMsg ? error.errMsg : '')
-  if (/url not in domain list/i.test(message)) {
-    return '当前小程序未放行该域名。请确认 AppID wx90cafc9508d6d885 的“服务器域名”中已将 https://api.pczhang.press 加入 request、uploadFile 和 downloadFile 合法域名，然后重新打开体验版。'
-  }
   if (/timeout/i.test(message)) return 'AI 分析超时，请稍后重试'
-  if (/fail|network|connect/i.test(message)) return fallback
+  if (/fail|network|connect|domain/i.test(message)) return fallback
   return message || fallback
 }
 
@@ -28,19 +25,12 @@ function healthCheck() {
   if (!backendUrl) return Promise.reject(new Error('请先配置 AI 后端地址'))
   return new Promise((resolve, reject) => {
     wx.request({
-      url: `${backendUrl}/health?_=${Date.now()}`,
+      url: `${backendUrl}/health`,
       method: 'GET',
-      header: {
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache'
-      },
       timeout: 15000,
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data)
-        } else if (res.statusCode === 304) {
-          // A cache hit still proves that the HTTPS backend is reachable.
-          resolve({ status: 'ok', service: 'AI backend' })
         } else {
           reject(new Error(parseErrorBody(res.data, `健康检查失败：HTTP ${res.statusCode}`)))
         }
@@ -56,13 +46,12 @@ function analyzeImage(filePath, textHint = '', onProgress) {
   const backendUrl = getBackendUrl()
   if (!backendUrl) return Promise.reject(new Error('请先在设置页配置 AI 后端地址'))
   return new Promise((resolve, reject) => {
-    const upload = (token, retryWithoutToken) => {
     const task = wx.uploadFile({
       url: `${backendUrl}/api/analyze`,
       filePath,
       name: 'image',
-      header: token
-        ? { Authorization: `Bearer ${token}` }
+      header: getAccessToken()
+        ? { Authorization: `Bearer ${getAccessToken()}` }
         : {},
       formData: {
         textHint,
@@ -75,16 +64,8 @@ function analyzeImage(filePath, textHint = '', onProgress) {
         if (typeof onProgress === 'function') {
           onProgress({ phase: 'analyzing', progress: 100 })
         }
-        if (res.statusCode === 401 && retryWithoutToken) {
-          logout()
-          upload('', false)
-          return
-        }
         if (res.statusCode < 200 || res.statusCode >= 300) {
-          const fallback = res.statusCode === 401
-            ? '登录状态已失效，请在设置页重新登录'
-            : `分析失败：HTTP ${res.statusCode}`
-          reject(new Error(parseErrorBody(res.data, fallback)))
+          reject(new Error(parseErrorBody(res.data, `分析失败：HTTP ${res.statusCode}`)))
           return
         }
         try {
@@ -121,8 +102,6 @@ function analyzeImage(filePath, textHint = '', onProgress) {
         wx.hideNavigationBarLoading()
       }
     })
-    }
-    upload(getAccessToken(), true)
   })
 }
 

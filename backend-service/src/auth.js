@@ -90,14 +90,7 @@ export function optionalAuth(request, _response, next) {
     next();
     return;
   }
-  try {
-    const token = header.slice(7).trim();
-    const payload = verifyAccessToken(token);
-    request.user = { id: String(payload.sub) };
-  } catch {
-    // 可选认证接口不能因为客户端残留了过期令牌而拒绝匿名请求。
-  }
-  next();
+  requireAuth(request, _response, next);
 }
 
 export async function loginWithWechat({ code, devUserId }) {

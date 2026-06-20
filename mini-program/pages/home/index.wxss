@@ -130,14 +130,11 @@
 .quick-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: stretch;
   gap: 18rpx;
   margin-top: 20rpx;
 }
 
 .quick-actions .secondary-button {
-  width: 100%;
-  min-width: 0;
   min-height: 76rpx;
   font-size: 25rpx;
 }

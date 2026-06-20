@@ -31,7 +31,6 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '*')
   .filter(Boolean);
 
 app.disable('x-powered-by');
-app.disable('etag');
 app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
 app.use(helmet());
 app.use(
@@ -85,11 +84,6 @@ const upload = multer({
 });
 
 app.get('/health', (_request, response) => {
-  response.set({
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    Pragma: 'no-cache',
-    Expires: '0',
-  });
   response.json({
     status: 'ok',
     service: 'public-exam-ai-backend',

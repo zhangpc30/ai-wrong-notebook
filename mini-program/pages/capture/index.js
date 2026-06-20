@@ -14,14 +14,14 @@ Page({
   },
 
   chooseFromCamera() {
-    this.chooseImage(['camera'], true)
+    this.chooseImage(['camera'])
   },
 
   chooseFromAlbum() {
-    this.chooseImage(['album'], false)
+    this.chooseImage(['album'])
   },
 
-  chooseImage(sourceType = ['camera', 'album'], autoAnalyze = false) {
+  chooseImage(sourceType = ['camera', 'album']) {
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
@@ -38,26 +38,16 @@ Page({
             })
             return
           }
-          this.setData(
-            {
-              imagePath: file.tempFilePath,
-              imageSizeText: this.formatFileSize(file.size),
-              errorMessage: ''
-            },
-            () => {
-              if (autoAnalyze) this.analyze()
-            }
-          )
+          this.setData({
+            imagePath: file.tempFilePath,
+            imageSizeText: this.formatFileSize(file.size),
+            errorMessage: ''
+          })
         }
       },
       fail: error => {
-        const message = String(error.errMsg || '')
-        if (!message.includes('cancel')) {
-          this.setData({
-            errorMessage: /auth deny|authorize/i.test(message)
-              ? '相机权限未开启，请在微信设置中允许使用相机后重试。'
-              : '无法读取图片，请检查相机或相册权限后重试。'
-          })
+        if (!String(error.errMsg || '').includes('cancel')) {
+          this.setData({ errorMessage: '无法读取图片，请检查相机或相册权限后重试。' })
         }
       }
     })
@@ -111,7 +101,6 @@ Page({
       })
       return
     }
-    if (this.data.loading) return
     if (!this.data.imagePath) {
       wx.showToast({ title: '请先拍照或选择图片', icon: 'none' })
       return
