@@ -18,10 +18,17 @@ function getBackendUrl() {
 
 function setBackendUrl(value) {
   const normalized = normalizeBackendUrl(value)
+  const previous = normalizeBackendUrl(wx.getStorageSync(BACKEND_URL_KEY))
   if (normalized) {
     wx.setStorageSync(BACKEND_URL_KEY, normalized)
   } else {
     wx.removeStorageSync(BACKEND_URL_KEY)
+  }
+  if (previous && normalized !== previous) {
+    wx.removeStorageSync('cloud_access_token')
+    wx.removeStorageSync('cloud_user')
+    wx.removeStorageSync('cloud_last_sync')
+    wx.removeStorageSync('cloud_sync_error')
   }
   const app = typeof getApp === 'function' ? getApp() : null
   if (app && app.globalData) app.globalData.backendUrl = normalized

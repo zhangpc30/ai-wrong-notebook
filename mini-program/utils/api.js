@@ -1,6 +1,6 @@
 const { getBackendUrl } = require('./config')
 const { normalizeAnalysis } = require('./schema')
-const { getAccessToken } = require('./auth')
+const { getAccessToken, logout } = require('./auth')
 
 function parseErrorBody(data, fallback) {
   try {
@@ -46,12 +46,13 @@ function analyzeImage(filePath, textHint = '', onProgress) {
   const backendUrl = getBackendUrl()
   if (!backendUrl) return Promise.reject(new Error('请先在设置页配置 AI 后端地址'))
   return new Promise((resolve, reject) => {
+    const upload = (token, retryWithoutToken) => {
     const task = wx.uploadFile({
       url: `${backendUrl}/api/analyze`,
       filePath,
       name: 'image',
-      header: getAccessToken()
-        ? { Authorization: `Bearer ${getAccessToken()}` }
+      header: token
+        ? { Authorization: `Bearer ${token}` }
         : {},
       formData: {
         textHint,
@@ -64,8 +65,16 @@ function analyzeImage(filePath, textHint = '', onProgress) {
         if (typeof onProgress === 'function') {
           onProgress({ phase: 'analyzing', progress: 100 })
         }
+        if (res.statusCode === 401 && retryWithoutToken) {
+          logout()
+          upload('', false)
+          return
+        }
         if (res.statusCode < 200 || res.statusCode >= 300) {
-          reject(new Error(parseErrorBody(res.data, `分析失败：HTTP ${res.statusCode}`)))
+          const fallback = res.statusCode === 401
+            ? '登录状态已失效，请在设置页重新登录'
+            : `分析失败：HTTP ${res.statusCode}`
+          reject(new Error(parseErrorBody(res.data, fallback)))
           return
         }
         try {
@@ -102,6 +111,8 @@ function analyzeImage(filePath, textHint = '', onProgress) {
         wx.hideNavigationBarLoading()
       }
     })
+    }
+    upload(getAccessToken(), true)
   })
 }
 
