@@ -15,8 +15,11 @@ function parseErrorBody(data, fallback) {
 
 function networkMessage(error, fallback) {
   const message = String(error && error.errMsg ? error.errMsg : '')
+  if (/url not in domain list/i.test(message)) {
+    return '当前小程序未放行该域名。请确认 AppID wx90cafc9508d6d885 的“服务器域名”中已将 https://api.pczhang.press 加入 request、uploadFile 和 downloadFile 合法域名，然后重新打开体验版。'
+  }
   if (/timeout/i.test(message)) return 'AI 分析超时，请稍后重试'
-  if (/fail|network|connect|domain/i.test(message)) return fallback
+  if (/fail|network|connect/i.test(message)) return fallback
   return message || fallback
 }
 

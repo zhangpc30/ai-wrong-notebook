@@ -37,7 +37,12 @@ function authenticatedRequest(path, data) {
         reject(error)
       },
       fail(error) {
-        reject(new Error(error.errMsg || '无法连接云同步服务'))
+        const message = String(error.errMsg || '')
+        reject(new Error(
+          /url not in domain list/i.test(message)
+            ? '微信拦截了云同步请求。请在当前 AppID 的服务器域名中放行 https://api.pczhang.press。'
+            : message || '无法连接云同步服务'
+        ))
       }
     })
   })
@@ -75,7 +80,12 @@ function uploadImage(filePath) {
         }
       },
       fail(error) {
-        reject(new Error(error.errMsg || '图片同步失败'))
+        const message = String(error.errMsg || '')
+        reject(new Error(
+          /url not in domain list/i.test(message)
+            ? '微信拦截了图片上传。请确认 uploadFile 合法域名包含 https://api.pczhang.press。'
+            : message || '图片同步失败'
+        ))
       }
     })
   })

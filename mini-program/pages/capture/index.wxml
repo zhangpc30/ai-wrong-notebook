@@ -4,7 +4,7 @@
 
   <view class="capture-hero">
     <view class="capture-title">录入公考错题</view>
-    <view class="capture-copy">拍照或从相册选择清晰题目图片，由统一 AI 后端直接识别并分析。</view>
+    <view class="capture-copy">拍照后将自动上传分析；也可以从相册选择图片，确认后再开始分析。</view>
 
     <view class="preview" wx:if="{{imagePath}}">
       <image class="preview-image" src="{{imagePath}}" mode="aspectFit" bindtap="previewImage" />
@@ -18,7 +18,7 @@
       </view>
     </view>
     <view class="source-actions" wx:else>
-      <button class="primary-button choose-button" bindtap="chooseFromCamera">拍照</button>
+      <button class="primary-button choose-button" bindtap="chooseFromCamera">拍照并分析</button>
       <button class="secondary-button choose-button" bindtap="chooseFromAlbum">从相册选择</button>
     </view>
   </view>

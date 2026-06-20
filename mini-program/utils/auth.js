@@ -46,7 +46,12 @@ function requestJson(url, data) {
         reject(new Error(message))
       },
       fail(error) {
-        reject(new Error(error.errMsg || '无法连接登录服务'))
+        const message = String(error.errMsg || '')
+        reject(new Error(
+          /url not in domain list/i.test(message)
+            ? '微信拦截了登录请求。请确认当前 AppID 的 request 合法域名包含 https://api.pczhang.press，并重新打开体验版。'
+            : message || '无法连接登录服务'
+        ))
       }
     })
   })
