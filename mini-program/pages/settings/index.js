@@ -1,4 +1,4 @@
-const { getBackendUrl, setBackendUrl, isValidBackendUrl } = require('../../utils/config')
+const { getBackendUrl } = require('../../utils/config')
 const { healthCheck } = require('../../utils/api')
 const {
   listQuestions,
@@ -41,26 +41,7 @@ Page({
     return `${text.slice(0, 7)}…${text.slice(-6)}`
   },
 
-  onUrlInput(event) {
-    this.setData({ backendUrl: event.detail.value, status: '' })
-  },
-
-  saveBackend() {
-    if (!isValidBackendUrl(this.data.backendUrl)) {
-      wx.showToast({ title: '请输入有效的 HTTP 或 HTTPS 地址', icon: 'none' })
-      return
-    }
-    const value = setBackendUrl(this.data.backendUrl)
-    this.setData({ backendUrl: value, status: '后端地址已保存' })
-    wx.showToast({ title: '保存成功', icon: 'success' })
-  },
-
   async testBackend() {
-    if (!isValidBackendUrl(this.data.backendUrl)) {
-      wx.showToast({ title: '请先填写有效后端地址', icon: 'none' })
-      return
-    }
-    setBackendUrl(this.data.backendUrl)
     this.setData({ testing: true, status: '正在检查后端连接…' })
     try {
       const result = await healthCheck()
@@ -75,11 +56,6 @@ Page({
   },
 
   async loginCloud() {
-    if (!isValidBackendUrl(this.data.backendUrl)) {
-      wx.showToast({ title: '请先配置有效后端地址', icon: 'none' })
-      return
-    }
-    setBackendUrl(this.data.backendUrl)
     this.setData({ syncing: true, syncStatus: '正在通过微信安全登录…' })
     try {
       const user = await login()
