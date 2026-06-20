@@ -18,6 +18,8 @@ test('health and request validation do not require a model call', async () => {
   try {
     const health = await fetch(`${baseUrl}/health`);
     assert.equal(health.status, 200);
+    assert.match(health.headers.get('cache-control') || '', /no-store/);
+    assert.equal(health.headers.get('etag'), null);
     assert.equal((await health.json()).status, 'ok');
 
     const invalid = await fetch(`${baseUrl}/api/analyze`, {

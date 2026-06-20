@@ -28,12 +28,19 @@ function healthCheck() {
   if (!backendUrl) return Promise.reject(new Error('请先配置 AI 后端地址'))
   return new Promise((resolve, reject) => {
     wx.request({
-      url: `${backendUrl}/health`,
+      url: `${backendUrl}/health?_=${Date.now()}`,
       method: 'GET',
+      header: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      },
       timeout: 15000,
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data)
+        } else if (res.statusCode === 304) {
+          // A cache hit still proves that the HTTPS backend is reachable.
+          resolve({ status: 'ok', service: 'AI backend' })
         } else {
           reject(new Error(parseErrorBody(res.data, `健康检查失败：HTTP ${res.statusCode}`)))
         }
