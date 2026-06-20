@@ -48,9 +48,9 @@ test('shared button styles keep labels horizontally and vertically centered', ()
   const buttonRule = styles.match(/button\s*\{([\s\S]*?)\}/)
 
   assert.ok(buttonRule, 'missing shared button rule')
-  assert.match(buttonRule[1], /display:\s*flex/)
-  assert.match(buttonRule[1], /align-items:\s*center/)
-  assert.match(buttonRule[1], /justify-content:\s*center/)
+  assert.match(buttonRule[1], /display:\s*grid/)
+  assert.match(buttonRule[1], /place-items:\s*center/)
+  assert.match(buttonRule[1], /min-width:\s*0/)
   assert.doesNotMatch(buttonRule[1], /line-height:\s*\d+rpx/)
 })
 

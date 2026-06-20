@@ -25,10 +25,15 @@
 .source-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: stretch;
   gap: 18rpx;
 }
 
 .source-actions .choose-button {
+  width: 100%;
+  min-width: 0;
+  padding-right: 12rpx;
+  padding-left: 12rpx;
   min-height: 84rpx;
   font-size: 26rpx;
 }
@@ -61,6 +66,8 @@
 
 .mini-button {
   flex: 1;
+  width: 100%;
+  min-width: 0;
   min-height: 72rpx;
   color: #174d3e;
   font-size: 25rpx;
