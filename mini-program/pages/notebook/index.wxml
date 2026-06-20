@@ -1,15 +1,33 @@
 <view class="page">
   <view class="page-title">错题本</view>
-  <view class="page-subtitle">按模块和关键词快速找到需要复习的题目。</view>
+  <view class="page-subtitle">把题目收拢、筛清，再一次次练到真正掌握。</view>
+
+  <view class="view-tabs">
+    <view class="view-tab {{viewMode === 'all' ? 'active' : ''}}" data-mode="all" bindtap="setViewMode">全部</view>
+    <view class="view-tab {{viewMode === 'due' ? 'active' : ''}}" data-mode="due" bindtap="setViewMode">待复习</view>
+    <view class="view-tab {{viewMode === 'weak' ? 'active' : ''}}" data-mode="weak" bindtap="setViewMode">薄弱题</view>
+    <view class="view-tab {{viewMode === 'favorite' ? 'active' : ''}}" data-mode="favorite" bindtap="setViewMode">收藏</view>
+  </view>
 
   <view class="filter-card card">
     <input class="search" value="{{query}}" placeholder="搜索题目、模块、考点或错因" bindinput="onSearch" />
     <view class="filter-row">
-      <picker range="{{moduleOptions}}" bindchange="onModuleChange">
+      <picker range="{{moduleOptions}}" value="{{moduleIndex}}" bindchange="onModuleChange">
         <view class="filter-picker">{{moduleFilter || '全部模块'}}</view>
       </picker>
       <picker range="{{masteryOptions}}" value="{{masteryFilter}}" bindchange="onMasteryChange">
         <view class="filter-picker">{{masteryOptions[masteryFilter]}}</view>
+      </picker>
+    </view>
+    <view class="filter-row">
+      <picker range="{{questionTypeOptions}}" value="{{questionTypeIndex}}" bindchange="onQuestionTypeChange">
+        <view class="filter-picker">{{questionTypeFilter || '全部题型'}}</view>
+      </picker>
+      <picker range="{{difficultyOptions}}" value="{{difficultyIndex}}" bindchange="onDifficultyChange">
+        <view class="filter-picker">{{difficultyFilter ? difficultyFilter + '难度' : '全部难度'}}</view>
+      </picker>
+      <picker range="{{priorityOptions}}" value="{{priorityIndex}}" bindchange="onPriorityChange">
+        <view class="filter-picker">{{priorityFilter ? priorityFilter + '优先级' : '全部优先级'}}</view>
       </picker>
     </view>
     <view class="filter-footer">
@@ -17,7 +35,19 @@
     </view>
   </view>
 
-  <view class="result-count">共 {{filtered.length}} 道错题</view>
+  <view class="list-toolbar">
+    <view class="result-count">共 {{filtered.length}} 道错题</view>
+    <view class="manage-action" bindtap="toggleSelectionMode">{{selectionMode ? '完成' : '批量管理'}}</view>
+  </view>
+
+  <view class="selection-bar" wx:if="{{selectionMode}}">
+    <view>已选 {{selectedIds.length}} 题</view>
+    <view class="selection-actions">
+      <text bindtap="selectAll">全选</text>
+      <text class="favorite-action" bindtap="batchFavorite">收藏</text>
+      <text class="danger-action" bindtap="batchDelete">删除</text>
+    </view>
+  </view>
 
   <view wx:if="{{filtered.length}}">
     <view
@@ -25,12 +55,20 @@
       wx:for="{{filtered}}"
       wx:key="id"
       data-id="{{item.id}}"
-      bindtap="openDetail"
+      bindtap="handleCardTap"
     >
       <view class="question-top">
-        <view class="question-meta">{{item.displayMeta}}</view>
-        <view class="priority priority-{{item.reviewPriority === '高' ? 'high' : 'normal'}}">
-          {{item.reviewPriority || '未设优先级'}}
+        <view class="question-meta">
+          <view class="select-dot {{item.selected ? 'selected' : ''}}" wx:if="{{selectionMode}}"></view>
+          {{item.displayMeta}}
+        </view>
+        <view class="top-actions">
+          <view class="favorite {{item.isFavorite ? 'active' : ''}}" data-id="{{item.id}}" catchtap="favoriteItem">
+            {{item.isFavorite ? '★' : '☆'}}
+          </view>
+          <view class="priority priority-{{item.reviewPriority === '高' ? 'high' : 'normal'}}">
+            {{item.reviewPriority || '未设优先级'}}
+          </view>
         </view>
       </view>
       <view class="question-title">{{item.questionText}}</view>
@@ -40,7 +78,7 @@
         <text>掌握 {{item.masteryLevel}} / 5</text>
         <text>{{item.displayDate}}</text>
       </view>
-      <button class="delete-item" data-id="{{item.id}}" catchtap="deleteItem">删除</button>
+      <button class="delete-item" wx:if="{{!selectionMode}}" data-id="{{item.id}}" catchtap="deleteItem">删除</button>
     </view>
   </view>
   <view class="empty card" wx:else>

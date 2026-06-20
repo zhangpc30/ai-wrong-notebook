@@ -1,5 +1,6 @@
 const { normalizeAnalysis, createRecord, toStringList } = require('../../utils/schema')
 const { upsertQuestion, getQuestion } = require('../../utils/storage')
+const { scheduleSync } = require('../../utils/sync')
 
 const EXAM_TYPES = ['国考', '省考', '事业编', '三支一扶', '军队文职', '选调生', '无法判断']
 const PAPER_TYPES = ['行测', '申论', '公基', '职测', '综合应用能力', '无法判断']
@@ -37,6 +38,7 @@ Page({
     masteryLevels: MASTERY_LEVELS,
     qualityNeedsReview: false,
     qualityWarnings: [],
+    splitQuestions: [],
     saving: false
   },
 
@@ -45,6 +47,15 @@ Page({
     const existing = options.id ? getQuestion(options.id) : null
     const source = existing || app.globalData.pendingAnalysis || {}
     const form = normalizeAnalysis(source)
+    const splitQuestions = !existing && form.multiQuestion.detected
+      ? form.multiQuestion.questions
+          .map(item => normalizeAnalysis({
+            ...form,
+            ...item,
+            multiQuestion: { detected: false, questions: [] }
+          }))
+          .filter(item => item.questionText)
+      : []
     this.setData({
       form,
       knowledgePointsText: form.knowledgePoints.join('、'),
@@ -52,6 +63,7 @@ Page({
       notes: form.notes,
       qualityNeedsReview: Boolean(form.qualityCheck.needsReview),
       qualityWarnings: form.qualityCheck.warnings,
+      splitQuestions,
       imagePath: existing
         ? existing.imagePath || ''
         : app.globalData.pendingImagePath || '',
@@ -95,33 +107,57 @@ Page({
     })
   },
 
-  async save() {
-    const form = normalizeAnalysis({
+  buildForm() {
+    return normalizeAnalysis({
       ...this.data.form,
       knowledgePoints: toStringList(this.data.knowledgePointsText),
       options: toStringList(this.data.optionsText)
     })
+  },
+
+  async persistImage() {
+    let imagePath = this.data.imagePath
+    if (!imagePath || this.data.editId) {
+      return imagePath
+    }
+    try {
+      const saved = await new Promise((resolve, reject) => {
+        wx.saveFile({
+          tempFilePath: imagePath,
+          success: resolve,
+          fail: reject
+        })
+      })
+      return saved.savedFilePath
+    } catch (_) {
+      return imagePath
+    }
+  },
+
+  finishSave(savedId, message) {
+    getApp().globalData.pendingAnalysis = null
+    getApp().globalData.pendingImagePath = ''
+    wx.showToast({ title: message, icon: 'success' })
+    setTimeout(() => {
+      if (this.data.editId) {
+        wx.navigateBack()
+      } else if (savedId) {
+        wx.redirectTo({ url: `/pages/detail/index?id=${savedId}` })
+      } else {
+        wx.switchTab({ url: '/pages/notebook/index' })
+      }
+    }, 500)
+  },
+
+  async save() {
+    const form = this.buildForm()
     if (!form.questionText) {
       wx.showToast({ title: '题目原文不能为空', icon: 'none' })
       return
     }
     this.setData({ saving: true })
     try {
-      let imagePath = this.data.imagePath
-      if (imagePath && !this.data.editId) {
-        try {
-          const saved = await new Promise((resolve, reject) => {
-            wx.saveFile({
-              tempFilePath: imagePath,
-              success: resolve,
-              fail: reject
-            })
-          })
-          imagePath = saved.savedFilePath
-        } catch (_) {
-          // 图片保存失败不阻断结构化错题保存。
-        }
-      }
+      const imagePath = await this.persistImage()
       const existing = this.data.editId ? getQuestion(this.data.editId) : null
       const record = existing
         ? {
@@ -135,16 +171,26 @@ Page({
             imagePath
           })
       const saved = upsertQuestion(record)
-      getApp().globalData.pendingAnalysis = null
-      getApp().globalData.pendingImagePath = ''
-      wx.showToast({ title: '已保存到错题本', icon: 'success' })
-      setTimeout(() => {
-        if (this.data.editId) {
-          wx.navigateBack()
-        } else {
-          wx.redirectTo({ url: `/pages/detail/index?id=${saved.id}` })
-        }
-      }, 500)
+      scheduleSync()
+      this.finishSave(saved.id, '已保存到错题本')
+    } finally {
+      this.setData({ saving: false })
+    }
+  },
+
+  async saveSplitQuestions() {
+    if (!this.data.splitQuestions.length || this.data.saving) return
+    this.setData({ saving: true })
+    try {
+      const imagePath = await this.persistImage()
+      this.data.splitQuestions.forEach(question => {
+        upsertQuestion(createRecord(question, {
+          imagePath,
+          notes: this.data.notes
+        }))
+      })
+      scheduleSync()
+      this.finishSave('', `已拆分保存 ${this.data.splitQuestions.length} 题`)
     } finally {
       this.setData({ saving: false })
     }

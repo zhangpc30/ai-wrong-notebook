@@ -1,4 +1,9 @@
 <view class="page">
+  <view class="mode-chip mode-{{cloudStatusTone}}" bindtap="goSettings">
+    <view class="mode-dot"></view>
+    <text>{{cloudStatusText}}</text>
+  </view>
+
   <view class="config-banner" wx:if="{{!backendConfigured}}" bindtap="goSettings">
     <view>
       <view class="config-title">请先配置 AI 后端地址</view>
@@ -16,7 +21,17 @@
 
   <view class="quick-actions">
     <button class="secondary-button" bindtap="goNotebook">打开错题本</button>
-    <button class="secondary-button" bindtap="goSettings">后端设置</button>
+    <button class="secondary-button review-quick" bindtap="goReview">今日复习</button>
+  </view>
+
+  <view class="review-callout" bindtap="goReview">
+    <view class="review-callout-main">
+      <view class="review-eyebrow">TODAY'S REVIEW</view>
+      <view class="review-title">今天有 {{dueCount}} 道题值得再看一遍</view>
+      <view class="review-copy" wx:if="{{dueCount}}">按薄弱程度和复习优先级排好了顺序。</view>
+      <view class="review-copy" wx:else>今天的计划已经清空，保持这个节奏。</view>
+    </view>
+    <view class="review-arrow">›</view>
   </view>
 
   <view class="section-title">复盘概览</view>
@@ -34,8 +49,21 @@
       <view class="stat-label">未掌握</view>
     </view>
     <view class="stat stat-green">
-      <view class="stat-value">{{todayNew}}</view>
-      <view class="stat-label">今日新增</view>
+      <view class="stat-value">{{masteryRate}}%</view>
+      <view class="stat-label">掌握率</view>
+    </view>
+  </view>
+
+  <view class="progress-card card">
+    <view class="progress-head">
+      <view>
+        <view class="progress-title">学习进度</view>
+        <view class="progress-copy">已掌握 {{mastered}} 题 · 收藏 {{favorites}} 题 · 今日新增 {{todayNew}} 题</view>
+      </view>
+      <view class="progress-percent">{{masteryRate}}%</view>
+    </view>
+    <view class="mastery-track">
+      <view class="mastery-value" style="width: {{masteryRate}}%;"></view>
     </view>
   </view>
 

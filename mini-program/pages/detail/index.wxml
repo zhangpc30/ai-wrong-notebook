@@ -8,7 +8,12 @@
   />
 
   <view class="summary card">
-    <view class="summary-meta">{{question.module || '未分类'}} · {{question.questionType || '未设置题型'}}</view>
+    <view class="summary-head">
+      <view class="summary-meta">{{question.module || '未分类'}} · {{question.questionType || '未设置题型'}}</view>
+      <view class="favorite-button {{question.isFavorite ? 'active' : ''}}" bindtap="favorite">
+        {{question.isFavorite ? '★ 已收藏' : '☆ 收藏'}}
+      </view>
+    </view>
     <view class="summary-title">{{question.questionText}}</view>
     <view class="tag-row" wx:if="{{knowledgeText}}">
       <view class="tag">{{knowledgeText}}</view>

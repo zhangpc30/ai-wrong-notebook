@@ -1,7 +1,9 @@
 .capture-hero {
   padding: 34rpx;
-  background: linear-gradient(180deg, #eef2ff 0%, #f8f9ff 100%);
-  border: 1rpx solid #d7ddff;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(217, 100, 69, 0.1), transparent 35%),
+    linear-gradient(180deg, #eaf3ee 0%, #faf8f2 100%);
+  border: 1rpx solid #cfe1d8;
   border-radius: 28rpx;
 }
 
@@ -17,7 +19,7 @@
 }
 
 .choose-button {
-  box-shadow: 0 12rpx 24rpx rgba(79, 70, 229, 0.16);
+  box-shadow: 0 12rpx 24rpx rgba(31, 107, 85, 0.16);
 }
 
 .source-actions {
@@ -43,6 +45,14 @@
   background: #e2e8f0;
 }
 
+.image-meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 14rpx 18rpx 0;
+  color: #64748b;
+  font-size: 22rpx;
+}
+
 .preview-actions {
   display: flex;
   gap: 16rpx;
@@ -52,14 +62,14 @@
 .mini-button {
   flex: 1;
   min-height: 72rpx;
-  color: #4338ca;
+  color: #174d3e;
   font-size: 25rpx;
-  background: #eef2ff;
+  background: #eaf3ee;
 }
 
 .mini-button.danger {
-  color: #b91c1c;
-  background: #fef2f2;
+  color: #a9462d;
+  background: #faeee9;
 }
 
 .analyze-button {
@@ -70,7 +80,7 @@
   margin-top: 20rpx;
   padding: 24rpx;
   color: #991b1b;
-  background: #fef2f2;
+  background: #faeee9;
   border: 1rpx solid #fecaca;
   border-radius: 20rpx;
 }
@@ -107,7 +117,87 @@
   left: 0;
   width: 10rpx;
   height: 10rpx;
-  background: #6366f1;
+  background: #d96445;
   border-radius: 50%;
   content: "";
+}
+
+.loading-sheet {
+  box-sizing: border-box;
+  width: 610rpx;
+  padding: 42rpx 38rpx;
+  color: #17211b;
+  text-align: center;
+  background: #fffdf8;
+  border-radius: 30rpx;
+  box-shadow: 0 28rpx 80rpx rgba(0, 0, 0, 0.22);
+}
+
+.loading-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76rpx;
+  height: 76rpx;
+  margin: 0 auto;
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 800;
+  background: #1f6b55;
+  border-radius: 24rpx 24rpx 24rpx 8rpx;
+}
+
+.step-track {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 34rpx;
+}
+
+.step {
+  color: #9aa39d;
+  font-size: 21rpx;
+}
+
+.step-dot {
+  width: 16rpx;
+  height: 16rpx;
+  margin: 0 auto 10rpx;
+  background: #d8ddd9;
+  border-radius: 50%;
+}
+
+.step.active {
+  color: #1f6b55;
+}
+
+.step.active .step-dot,
+.step-line.active {
+  background: #1f6b55;
+}
+
+.step-line {
+  width: 92rpx;
+  height: 4rpx;
+  margin: 6rpx 12rpx 0;
+  background: #d8ddd9;
+}
+
+.progress-track {
+  height: 8rpx;
+  margin-top: 28rpx;
+  overflow: hidden;
+  background: #e4e8e5;
+  border-radius: 999rpx;
+}
+
+.progress-value {
+  height: 100%;
+  background: #d96445;
+  border-radius: 999rpx;
+  transition: width 180ms ease;
+}
+
+.loading-sheet .loading-subtitle {
+  color: #758078;
 }

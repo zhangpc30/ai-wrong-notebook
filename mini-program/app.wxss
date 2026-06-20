@@ -1,8 +1,8 @@
 page {
   min-height: 100%;
-  background: #f5f7fb;
-  color: #0f172a;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  background: #f4f2ec;
+  color: #17211b;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   font-size: 28rpx;
 }
 
@@ -28,7 +28,7 @@ button::after {
 
 button[disabled] {
   color: rgba(255, 255, 255, 0.72) !important;
-  background: #a5b4fc !important;
+  background: #9bb8aa !important;
 }
 
 .page {
@@ -47,7 +47,7 @@ button[disabled] {
 
 .page-subtitle {
   margin-bottom: 30rpx;
-  color: #64748b;
+  color: #6b756f;
   font-size: 25rpx;
   line-height: 1.55;
 }
@@ -62,43 +62,43 @@ button[disabled] {
 .card {
   box-sizing: border-box;
   padding: 30rpx;
-  background: #ffffff;
-  border: 1rpx solid rgba(148, 163, 184, 0.22);
-  border-radius: 26rpx;
-  box-shadow: 0 12rpx 32rpx rgba(30, 41, 59, 0.055);
+  background: #fffdf8;
+  border: 1rpx solid #dedbd2;
+  border-radius: 24rpx;
+  box-shadow: 0 12rpx 32rpx rgba(43, 56, 48, 0.055);
 }
 
 .primary-button {
   width: 100%;
   min-height: 92rpx;
   color: #ffffff;
-  background: #4f46e5;
-  box-shadow: 0 12rpx 24rpx rgba(79, 70, 229, 0.18);
+  background: #1f6b55;
+  box-shadow: 0 12rpx 24rpx rgba(31, 107, 85, 0.18);
 }
 
 .secondary-button {
   width: 100%;
   min-height: 84rpx;
-  color: #4338ca;
-  background: #eef2ff;
-  border: 1rpx solid #dbe2ff;
+  color: #174d3e;
+  background: #eaf3ee;
+  border: 1rpx solid #cfe1d8;
 }
 
 .danger-button {
   width: 100%;
   min-height: 84rpx;
-  color: #b91c1c;
-  background: #fef2f2;
-  border: 1rpx solid #fee2e2;
+  color: #a9462d;
+  background: #faeee9;
+  border: 1rpx solid #efd2c8;
 }
 
 .muted {
-  color: #64748b;
+  color: #6b756f;
 }
 
 .empty {
   padding: 88rpx 32rpx;
-  color: #64748b;
+  color: #6b756f;
   line-height: 1.65;
   text-align: center;
 }
@@ -109,9 +109,9 @@ button[disabled] {
   min-height: 48rpx;
   margin: 0 12rpx 12rpx 0;
   padding: 0 18rpx;
-  color: #4338ca;
+  color: #174d3e;
   font-size: 24rpx;
-  background: #eef2ff;
+  background: #eaf3ee;
   border-radius: 999rpx;
 }
 
@@ -122,7 +122,7 @@ button[disabled] {
 .field-label {
   display: block;
   margin-bottom: 12rpx;
-  color: #334155;
+  color: #3c4a42;
   font-size: 25rpx;
   font-weight: 650;
 }
@@ -133,9 +133,9 @@ button[disabled] {
   box-sizing: border-box;
   width: 100%;
   padding: 22rpx 24rpx;
-  color: #0f172a;
-  background: #f8fafc;
-  border: 1rpx solid #dbe2ea;
+  color: #17211b;
+  background: #f8f6f0;
+  border: 1rpx solid #d8d6cd;
   border-radius: 16rpx;
 }
 
@@ -157,7 +157,7 @@ button[disabled] {
 .divider {
   height: 1rpx;
   margin: 24rpx 0;
-  background: #edf0f4;
+  background: #e7e3da;
 }
 
 .loading-mask {
@@ -169,7 +169,7 @@ button[disabled] {
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(21, 34, 28, 0.72);
 }
 
 .loading-title {

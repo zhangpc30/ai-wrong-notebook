@@ -5,18 +5,19 @@
     "pages/notebook/index",
     "pages/settings/index",
     "pages/result/index",
-    "pages/detail/index"
+    "pages/detail/index",
+    "pages/review/index"
   ],
   "window": {
     "navigationBarTitleText": "AI 公考错题本",
-    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarBackgroundColor": "#FFFDF8",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#F8FAFC",
+    "backgroundColor": "#F4F2EC",
     "backgroundTextStyle": "light"
   },
   "tabBar": {
     "color": "#64748B",
-    "selectedColor": "#4F46E5",
+    "selectedColor": "#1F6B55",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "white",
     "list": [

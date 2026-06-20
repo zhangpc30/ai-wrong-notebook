@@ -28,7 +28,8 @@ const SCHEMA_FIELDS = [
   'generatedExercises',
   'visualAssumptions',
   'qualityCheck',
-  'notes'
+  'notes',
+  'isFavorite'
 ]
 
 const EMPTY_ANALYSIS = Object.freeze({
@@ -72,7 +73,8 @@ const EMPTY_ANALYSIS = Object.freeze({
     needsReview: false,
     warnings: []
   },
-  notes: ''
+  notes: '',
+  isFavorite: false
 })
 
 function toStringList(value) {
@@ -154,7 +156,8 @@ function normalizeAnalysis(value) {
       needsReview: Boolean(qualityCheck.needsReview),
       warnings: toStringList(qualityCheck.warnings)
     },
-    notes: stringValue(source.notes)
+    notes: stringValue(source.notes),
+    isFavorite: Boolean(source.isFavorite)
   }
 }
 

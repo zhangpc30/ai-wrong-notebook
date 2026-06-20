@@ -1,5 +1,7 @@
 const { listQuestions } = require('../../utils/storage')
 const { getBackendUrl } = require('../../utils/config')
+const { buildStudyStats } = require('../../utils/review')
+const { getSyncState } = require('../../utils/sync')
 
 function todayKey(value = new Date()) {
   const date = new Date(value)
@@ -20,6 +22,13 @@ Page({
     highPriority: 0,
     unmastered: 0,
     todayNew: 0,
+    dueCount: 0,
+    mastered: 0,
+    masteryRate: 0,
+    favorites: 0,
+    cloudLoggedIn: false,
+    cloudStatusText: '本地模式',
+    cloudStatusTone: 'local',
     weakModule: '暂无',
     commonReason: '暂无',
     backendConfigured: false,
@@ -41,11 +50,28 @@ Page({
     const sorted = questions
       .slice()
       .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    const stats = buildStudyStats(questions)
+    const syncState = getSyncState()
     this.setData({
       total: questions.length,
       highPriority: questions.filter(item => item.reviewPriority === '高').length,
       unmastered: questions.filter(item => Number(item.masteryLevel) <= 2).length,
       todayNew: questions.filter(item => todayKey(item.createdAt) === today).length,
+      dueCount: stats.due,
+      mastered: stats.mastered,
+      masteryRate: stats.masteryRate,
+      favorites: stats.favorites,
+      cloudLoggedIn: syncState.loggedIn,
+      cloudStatusText: syncState.loggedIn
+        ? syncState.error
+          ? '云同步待重试'
+          : syncState.lastSyncAt
+            ? '云同步正常'
+            : '云同步已开启'
+        : '本地模式',
+      cloudStatusTone: syncState.loggedIn
+        ? syncState.error ? 'warning' : 'cloud'
+        : 'local',
       weakModule: mostFrequent(questions.map(item => item.module)),
       commonReason: mostFrequent(questions.map(item => item.mistakeReason)),
       backendConfigured: Boolean(getBackendUrl()),
@@ -64,6 +90,10 @@ Page({
 
   goNotebook() {
     wx.switchTab({ url: '/pages/notebook/index' })
+  },
+
+  goReview() {
+    wx.navigateTo({ url: '/pages/review/index' })
   },
 
   goSettings() {

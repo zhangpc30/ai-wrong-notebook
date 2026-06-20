@@ -1,0 +1,277 @@
+.review-page {
+  background:
+    radial-gradient(circle at 90% 3%, rgba(207, 225, 216, 0.7), transparent 28%),
+    #f4f1e9;
+}
+
+.review-header,
+.header-actions,
+.answer-row,
+.rating-actions {
+  display: flex;
+  align-items: center;
+}
+
+.review-header,
+.answer-row {
+  justify-content: space-between;
+}
+
+.review-kicker {
+  color: #1f6b55;
+  font-size: 23rpx;
+  font-weight: 800;
+  letter-spacing: 2rpx;
+}
+
+.review-count {
+  margin-top: 6rpx;
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.header-actions {
+  gap: 20rpx;
+}
+
+.favorite {
+  color: #c4872d;
+  font-size: 42rpx;
+}
+
+.detail-link {
+  padding: 12rpx 18rpx;
+  color: #315b4d;
+  font-size: 23rpx;
+  background: #e2ece7;
+  border-radius: 999rpx;
+}
+
+.progress-track {
+  height: 8rpx;
+  margin: 22rpx 0 28rpx;
+  overflow: hidden;
+  background: #d9ded9;
+  border-radius: 999rpx;
+}
+
+.progress-value {
+  height: 100%;
+  min-width: 4rpx;
+  background: #d96445;
+  border-radius: 999rpx;
+}
+
+.question-image {
+  width: 100%;
+  height: 360rpx;
+  margin-bottom: 20rpx;
+  background: #e5e1d8;
+  border-radius: 22rpx;
+}
+
+.paper-card,
+.answer-sheet,
+.exercise-card,
+.rating-panel,
+.finish-card {
+  padding: 34rpx;
+  background: #fffdf8;
+  border: 1rpx solid #ded9cd;
+  border-radius: 24rpx;
+  box-shadow: 0 12rpx 30rpx rgba(50, 56, 49, 0.06);
+}
+
+.paper-meta {
+  color: #1f6b55;
+  font-size: 23rpx;
+  font-weight: 750;
+}
+
+.paper-question {
+  margin-top: 18rpx;
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 31rpx;
+  font-weight: 650;
+  line-height: 1.72;
+}
+
+.paper-option {
+  margin-top: 14rpx;
+  padding: 18rpx 20rpx;
+  line-height: 1.55;
+  background: #f5f2ea;
+  border-radius: 12rpx;
+}
+
+.memory-note {
+  margin-top: 28rpx;
+  color: #8b8171;
+  font-size: 22rpx;
+  text-align: center;
+}
+
+.reveal-button {
+  min-height: 92rpx;
+  margin-top: 22rpx;
+  color: #fff;
+  background: #1f6b55;
+  box-shadow: 0 12rpx 24rpx rgba(31, 107, 85, 0.2);
+}
+
+.answer-sheet,
+.exercise-card,
+.rating-panel {
+  margin-top: 20rpx;
+}
+
+.answer-row > view {
+  width: 48%;
+}
+
+.answer-label,
+.analysis-title,
+.exercise-label,
+.rating-title {
+  color: #6c766f;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.answer {
+  margin-top: 9rpx;
+  padding: 16rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  text-align: center;
+  border-radius: 12rpx;
+}
+
+.correct {
+  color: #176044;
+  background: #e8f3ed;
+}
+
+.mine {
+  color: #a65235;
+  background: #f9eee9;
+}
+
+.analysis-title {
+  margin-top: 28rpx;
+}
+
+.analysis-copy,
+.exercise-question {
+  margin-top: 12rpx;
+  line-height: 1.72;
+  white-space: pre-wrap;
+}
+
+.mistake-note {
+  margin-top: 20rpx;
+  padding: 18rpx;
+  color: #8b4a34;
+  font-size: 24rpx;
+  line-height: 1.55;
+  background: #fbf0eb;
+  border-left: 6rpx solid #d96445;
+  border-radius: 8rpx;
+}
+
+.exercise-label {
+  color: #1f6b55;
+  letter-spacing: 1rpx;
+}
+
+.exercise-button {
+  min-height: 70rpx;
+  margin-top: 20rpx;
+  color: #1f6b55;
+  font-size: 24rpx;
+  background: #edf5f1;
+}
+
+.exercise-answer {
+  margin-top: 18rpx;
+  padding: 18rpx;
+  color: #315b4d;
+  line-height: 1.6;
+  background: #edf5f1;
+  border-radius: 12rpx;
+}
+
+.exercise-analysis {
+  margin-top: 8rpx;
+  color: #63726a;
+  font-size: 23rpx;
+}
+
+.rating-title {
+  color: #24352d;
+  font-size: 27rpx;
+  text-align: center;
+}
+
+.rating-actions {
+  gap: 12rpx;
+  margin-top: 22rpx;
+}
+
+.rating-button {
+  flex: 1;
+  min-height: 76rpx;
+  padding: 0 10rpx;
+  font-size: 22rpx;
+}
+
+.again {
+  color: #a9462d;
+  background: #fae9e3;
+}
+
+.unsure {
+  color: #94651e;
+  background: #fbf1d8;
+}
+
+.known {
+  color: #176044;
+  background: #e5f1eb;
+}
+
+.finish-card {
+  margin-top: 100rpx;
+  text-align: center;
+}
+
+.finish-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96rpx;
+  height: 96rpx;
+  margin: 0 auto;
+  color: #fff;
+  font-size: 48rpx;
+  background: #1f6b55;
+  border-radius: 32rpx 32rpx 32rpx 10rpx;
+}
+
+.finish-title {
+  margin-top: 28rpx;
+  font-family: "Songti SC", "STSong", serif;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.finish-copy {
+  margin: 16rpx auto 30rpx;
+  color: #6b756f;
+  line-height: 1.65;
+}
+
+.finish-secondary {
+  margin-top: 16rpx;
+}

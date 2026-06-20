@@ -1,0 +1,79 @@
+<view class="page review-page">
+  <view class="review-header" wx:if="{{!finished}}">
+    <view>
+      <view class="review-kicker">今日复习</view>
+      <view class="review-count">第 {{completedCount + 1}} / {{originalCount}} 题</view>
+    </view>
+    <view class="header-actions">
+      <view class="favorite" bindtap="toggleFavorite">{{current.isFavorite ? '★' : '☆'}}</view>
+      <view class="detail-link" bindtap="openDetail">详情</view>
+    </view>
+  </view>
+
+  <view class="progress-track" wx:if="{{!finished}}">
+    <view class="progress-value" style="width: {{progress}}%;"></view>
+  </view>
+
+  <view wx:if="{{current && !finished}}">
+    <image
+      wx:if="{{current.imagePath}}"
+      class="question-image"
+      src="{{current.imagePath}}"
+      mode="aspectFit"
+      bindtap="previewImage"
+    />
+
+    <view class="paper-card">
+      <view class="paper-meta">{{current.module || '未分类'}} · {{current.questionType || '未设置题型'}}</view>
+      <view class="paper-question">{{current.questionText}}</view>
+      <view class="paper-option" wx:for="{{current.options}}" wx:key="*this">{{item}}</view>
+      <view class="memory-note" wx:if="{{!revealed}}">先在心里作答，再翻开答案。</view>
+    </view>
+
+    <button class="reveal-button" wx:if="{{!revealed}}" bindtap="reveal">翻开答案</button>
+
+    <view class="answer-sheet" wx:if="{{revealed}}">
+      <view class="answer-row">
+        <view>
+          <view class="answer-label">正确答案</view>
+          <view class="answer correct">{{current.correctAnswer || '待补充'}}</view>
+        </view>
+        <view>
+          <view class="answer-label">我的答案</view>
+          <view class="answer mine">{{current.myAnswer || '未填写'}}</view>
+        </view>
+      </view>
+      <view class="analysis-title">核心解析</view>
+      <view class="analysis-copy">{{current.fastSolution || current.standardAnalysis || current.analysis || '暂无解析'}}</view>
+      <view class="mistake-note" wx:if="{{current.mistakeReason}}">上次错因：{{current.mistakeReason}}</view>
+    </view>
+
+    <view class="exercise-card" wx:if="{{revealed && exercise}}">
+      <view class="exercise-label">同类题加练</view>
+      <view class="exercise-question">{{exercise.question}}</view>
+      <button class="exercise-button" wx:if="{{!exerciseRevealed}}" bindtap="revealExercise">查看练习答案</button>
+      <view class="exercise-answer" wx:if="{{exerciseRevealed}}">
+        <view>答案：{{exercise.answer || '待补充'}}</view>
+        <view class="exercise-analysis">{{exercise.analysis}}</view>
+      </view>
+    </view>
+
+    <view class="rating-panel" wx:if="{{revealed}}">
+      <view class="rating-title">这次掌握得怎么样？</view>
+      <view class="rating-actions">
+        <button class="rating-button again" data-mastery="1" bindtap="rate">没掌握</button>
+        <button class="rating-button unsure" data-mastery="3" bindtap="rate">有点犹豫</button>
+        <button class="rating-button known" data-mastery="5" bindtap="rate">已经掌握</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="finish-card" wx:if="{{finished}}">
+    <view class="finish-mark">✓</view>
+    <view class="finish-title">{{originalCount ? '今天的复习完成了' : '今天没有待复习题目'}}</view>
+    <view class="finish-copy" wx:if="{{originalCount}}">你完成了 {{completedCount}} 道题。真正的进步，通常就藏在这种重复里。</view>
+    <view class="finish-copy" wx:else>新增错题或降低掌握程度后，它们会自动进入复习队列。</view>
+    <button class="primary-button" bindtap="goNotebook">返回错题本</button>
+    <button class="secondary-button finish-secondary" bindtap="goCapture">再录一道错题</button>
+  </view>
+</view>

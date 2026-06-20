@@ -2,6 +2,31 @@
   padding: 22rpx;
 }
 
+.view-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10rpx;
+  margin-bottom: 18rpx;
+  padding: 8rpx;
+  background: #e8ece8;
+  border-radius: 18rpx;
+}
+
+.view-tab {
+  padding: 16rpx 6rpx;
+  color: #68746d;
+  font-size: 23rpx;
+  text-align: center;
+  border-radius: 13rpx;
+}
+
+.view-tab.active {
+  color: #174d3e;
+  font-weight: 750;
+  background: #fffdf8;
+  box-shadow: 0 4rpx 14rpx rgba(34, 53, 43, 0.08);
+}
+
 .search {
   box-sizing: border-box;
   width: 100%;
@@ -27,15 +52,16 @@
 
 .filter-row picker {
   flex: 1;
+  min-width: 0;
 }
 
 .filter-picker {
   min-width: 0;
   padding: 17rpx 22rpx;
   text-align: center;
-  color: #4338ca;
+  color: #174d3e;
   font-size: 24rpx;
-  background: #eef2ff;
+  background: #eaf3ee;
   border-radius: 14rpx;
 }
 
@@ -52,9 +78,51 @@
 }
 
 .result-count {
-  margin: 24rpx 4rpx 18rpx;
   color: #64748b;
   font-size: 24rpx;
+}
+
+.list-toolbar,
+.selection-bar,
+.selection-actions,
+.top-actions,
+.question-meta {
+  display: flex;
+  align-items: center;
+}
+
+.list-toolbar {
+  justify-content: space-between;
+  margin: 24rpx 4rpx 18rpx;
+}
+
+.manage-action {
+  color: #1f6b55;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.selection-bar {
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+  padding: 20rpx 24rpx;
+  color: #174d3e;
+  font-size: 24rpx;
+  background: #edf5f1;
+  border-radius: 16rpx;
+}
+
+.selection-actions {
+  gap: 28rpx;
+  font-weight: 700;
+}
+
+.favorite-action {
+  color: #b7791f;
+}
+
+.danger-action {
+  color: #b7472a;
 }
 
 .question-card {
@@ -62,9 +130,38 @@
 }
 
 .question-meta {
-  color: #4f46e5;
+  color: #1f6b55;
   font-size: 24rpx;
   font-weight: 650;
+}
+
+.select-dot {
+  box-sizing: border-box;
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 12rpx;
+  border: 2rpx solid #9aa69f;
+  border-radius: 50%;
+}
+
+.select-dot.selected {
+  background: #1f6b55;
+  border: 7rpx solid #cfe1d8;
+}
+
+.top-actions {
+  gap: 12rpx;
+}
+
+.favorite {
+  padding: 5rpx;
+  color: #9aa39d;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.favorite.active {
+  color: #c4872d;
 }
 
 .priority {
@@ -76,8 +173,8 @@
 }
 
 .priority-high {
-  color: #b91c1c;
-  background: #fef2f2;
+  color: #a9462d;
+  background: #faeee9;
 }
 
 .question-title {
@@ -92,7 +189,7 @@
 
 .knowledge {
   margin-top: 16rpx;
-  color: #4338ca;
+  color: #174d3e;
   font-size: 24rpx;
 }
 
@@ -112,10 +209,10 @@
 .delete-item {
   min-height: 62rpx;
   margin-top: 18rpx;
-  color: #b91c1c;
+  color: #a9462d;
   font-size: 23rpx;
-  background: #fef2f2;
-  border: 1rpx solid #fee2e2;
+  background: #faeee9;
+  border: 1rpx solid #efd2c8;
 }
 
 .empty-title {

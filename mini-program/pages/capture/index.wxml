@@ -8,6 +8,10 @@
 
     <view class="preview" wx:if="{{imagePath}}">
       <image class="preview-image" src="{{imagePath}}" mode="aspectFit" bindtap="previewImage" />
+      <view class="image-meta">
+        <text>已选择题目图片</text>
+        <text wx:if="{{imageSizeText}}">{{imageSizeText}}</text>
+      </view>
       <view class="preview-actions">
         <button class="mini-button" bindtap="chooseFromAlbum">重新选择</button>
         <button class="mini-button danger" bindtap="clearImage">移除</button>
@@ -49,7 +53,28 @@
 </view>
 
 <view class="loading-mask" wx:if="{{loading}}">
-  <icon type="waiting" size="48" color="#ffffff" />
-  <view class="loading-title">{{loadingText}}</view>
-  <view class="loading-subtitle">复杂图表可能需要几十秒，请保持页面开启</view>
+  <view class="loading-sheet">
+    <view class="loading-mark">{{loadingStep}}</view>
+    <view class="loading-title">{{loadingText}}</view>
+    <view class="step-track">
+      <view class="step {{loadingStep >= 1 ? 'active' : ''}}">
+        <view class="step-dot"></view>
+        <text>优化</text>
+      </view>
+      <view class="step-line {{loadingStep >= 2 ? 'active' : ''}}"></view>
+      <view class="step {{loadingStep >= 2 ? 'active' : ''}}">
+        <view class="step-dot"></view>
+        <text>上传</text>
+      </view>
+      <view class="step-line {{loadingStep >= 3 ? 'active' : ''}}"></view>
+      <view class="step {{loadingStep >= 3 ? 'active' : ''}}">
+        <view class="step-dot"></view>
+        <text>分析</text>
+      </view>
+    </view>
+    <view class="progress-track" wx:if="{{loadingStep === 2}}">
+      <view class="progress-value" style="width: {{uploadProgress}}%;"></view>
+    </view>
+    <view class="loading-subtitle">复杂图表可能需要几十秒，请保持页面开启</view>
+  </view>
 </view>

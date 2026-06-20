@@ -2,9 +2,11 @@ const {
   getQuestion,
   deleteQuestion,
   upsertQuestion,
-  updateMistake
+  updateMistake,
+  toggleFavorite
 } = require('../../utils/storage')
 const { analyzeImage } = require('../../utils/api')
+const { scheduleSync } = require('../../utils/sync')
 
 Page({
   data: {
@@ -48,6 +50,17 @@ Page({
     wx.navigateTo({ url: `/pages/result/index?id=${this.data.id}` })
   },
 
+  favorite() {
+    const updated = toggleFavorite(this.data.id)
+    if (!updated) return
+    this.setData({ question: updated })
+    scheduleSync()
+    wx.showToast({
+      title: updated.isFavorite ? '已收藏' : '已取消收藏',
+      icon: 'success'
+    })
+  },
+
   onNotesInput(event) {
     this.setData({ notesDraft: event.detail.value })
   },
@@ -66,6 +79,7 @@ Page({
     })
     if (updated) {
       this.setData({ question: updated, notesDraft: updated.notes })
+      scheduleSync()
       wx.showToast({ title: '复习状态已保存', icon: 'success' })
     }
   },
@@ -89,6 +103,7 @@ Page({
         notes: question.notes,
         imagePath: question.imagePath
       })
+      scheduleSync()
       wx.showToast({ title: '重新分析完成', icon: 'success' })
       this.loadQuestion()
     } catch (error) {
@@ -110,6 +125,7 @@ Page({
       success: result => {
         if (!result.confirm) return
         deleteQuestion(this.data.id)
+        scheduleSync()
         wx.showToast({ title: '已删除', icon: 'success' })
         setTimeout(() => wx.switchTab({ url: '/pages/notebook/index' }), 400)
       }

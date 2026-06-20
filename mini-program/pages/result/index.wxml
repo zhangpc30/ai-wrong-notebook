@@ -10,6 +10,15 @@
     <view class="quality-item" wx:for="{{qualityWarnings}}" wx:key="*this">{{item}}</view>
   </view>
 
+  <view class="split-card" wx:if="{{splitQuestions.length > 1}}">
+    <view class="split-number">{{splitQuestions.length}}</view>
+    <view class="split-content">
+      <view class="split-title">检测到多道题目</view>
+      <view class="split-copy">可按 AI 拆分结果一次保存为 {{splitQuestions.length}} 条独立错题。</view>
+    </view>
+    <button class="split-button" loading="{{saving}}" bindtap="saveSplitQuestions">全部拆分保存</button>
+  </view>
+
   <image
     wx:if="{{imagePath}}"
     class="question-image"
@@ -125,6 +134,6 @@
   </view>
 
   <button class="primary-button save-button" loading="{{saving}}" bindtap="save">
-    {{editId ? '保存修改' : '保存到错题本'}}
+    {{editId ? '保存修改' : splitQuestions.length > 1 ? '仅保存当前题' : '保存到错题本'}}
   </button>
 </view>

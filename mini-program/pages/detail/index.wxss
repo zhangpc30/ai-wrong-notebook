@@ -7,9 +7,28 @@
 }
 
 .summary-meta {
-  color: #4f46e5;
+  color: #1f6b55;
   font-size: 24rpx;
   font-weight: 650;
+}
+
+.summary-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.favorite-button {
+  padding: 10rpx 16rpx;
+  color: #7d867f;
+  font-size: 22rpx;
+  background: #f0f2ef;
+  border-radius: 999rpx;
+}
+
+.favorite-button.active {
+  color: #9a681e;
+  background: #fbf1d8;
 }
 
 .summary-title {

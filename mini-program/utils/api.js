@@ -1,5 +1,6 @@
 const { getBackendUrl } = require('./config')
 const { normalizeAnalysis } = require('./schema')
+const { getAccessToken } = require('./auth')
 
 function parseErrorBody(data, fallback) {
   try {
@@ -41,7 +42,7 @@ function healthCheck() {
   })
 }
 
-function analyzeImage(filePath, textHint = '') {
+function analyzeImage(filePath, textHint = '', onProgress) {
   const backendUrl = getBackendUrl()
   if (!backendUrl) return Promise.reject(new Error('请先在设置页配置 AI 后端地址'))
   return new Promise((resolve, reject) => {
@@ -49,14 +50,20 @@ function analyzeImage(filePath, textHint = '') {
       url: `${backendUrl}/api/analyze`,
       filePath,
       name: 'image',
+      header: getAccessToken()
+        ? { Authorization: `Bearer ${getAccessToken()}` }
+        : {},
       formData: {
         textHint,
         clientType: 'wechat-mini-program',
-        clientVersion: '1.0.0'
+        clientVersion: '1.1.0'
       },
       timeout: 240000,
       success(res) {
         wx.hideNavigationBarLoading()
+        if (typeof onProgress === 'function') {
+          onProgress({ phase: 'analyzing', progress: 100 })
+        }
         if (res.statusCode < 200 || res.statusCode >= 300) {
           reject(new Error(parseErrorBody(res.data, `分析失败：HTTP ${res.statusCode}`)))
           return
@@ -83,6 +90,12 @@ function analyzeImage(filePath, textHint = '') {
       }
     })
     task.onProgressUpdate(progress => {
+      if (typeof onProgress === 'function') {
+        onProgress({
+          phase: progress.progress < 100 ? 'uploading' : 'analyzing',
+          progress: progress.progress
+        })
+      }
       if (progress.progress < 100) {
         wx.showNavigationBarLoading()
       } else {
