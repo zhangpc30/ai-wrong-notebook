@@ -4,7 +4,7 @@
 
   <view class="capture-hero">
     <view class="capture-title">录入公考错题</view>
-    <view class="capture-copy">拍照后自动进入云端分析；也可以从相册选择图片，确认后再开始。</view>
+    <view class="capture-copy">拍照后可先裁剪聚焦题目，再提交云端分析；相册图片也支持同样操作。</view>
 
     <view class="preview" wx:if="{{imagePath}}">
       <image class="preview-image" src="{{imagePath}}" mode="aspectFit" bindtap="previewImage" />
@@ -13,12 +13,13 @@
         <text wx:if="{{imageSizeText}}">{{imageSizeText}}</text>
       </view>
       <view class="preview-actions">
-        <button class="mini-button" bindtap="chooseFromAlbum">重新选择</button>
+        <button class="mini-button crop-button" bindtap="cropImage">裁剪聚焦</button>
+        <button class="mini-button" bindtap="chooseFromCamera">重新拍照</button>
         <button class="mini-button danger" bindtap="clearImage">移除</button>
       </view>
     </view>
     <view class="source-actions" wx:else>
-      <button class="primary-button choose-button" bindtap="chooseFromCamera">拍照并分析</button>
+      <button class="primary-button choose-button" bindtap="chooseFromCamera">拍照录题</button>
       <button class="secondary-button choose-button" bindtap="chooseFromAlbum">从相册选择</button>
     </view>
   </view>

@@ -13,23 +13,23 @@ Page({
   },
 
   chooseFromCamera() {
-    this.chooseImage(['camera'], true)
+    this.chooseImage(['camera'])
   },
 
   chooseFromAlbum() {
-    this.chooseImage(['album'], false)
+    this.chooseImage(['album'])
   },
 
-  chooseImage(sourceType = ['camera', 'album'], autoAnalyze = false) {
-    wx.chooseMedia({
+  chooseImage(sourceType = ['camera', 'album']) {
+    wx.chooseImage({
       count: 1,
-      mediaType: ['image'],
       sourceType,
       sizeType: ['compressed'],
       success: result => {
+        const filePath = result.tempFilePaths && result.tempFilePaths[0]
         const file = result.tempFiles && result.tempFiles[0]
-        if (file) {
-          if (Number(file.size || 0) > 20 * 1024 * 1024) {
+        if (filePath) {
+          if (Number((file && file.size) || 0) > 20 * 1024 * 1024) {
             this.setData({
               imagePath: '',
               imageSizeText: '',
@@ -37,16 +37,11 @@ Page({
             })
             return
           }
-          this.setData(
-            {
-              imagePath: file.tempFilePath,
-              imageSizeText: this.formatFileSize(file.size),
-              errorMessage: ''
-            },
-            () => {
-              if (autoAnalyze) this.analyze()
-            }
-          )
+          this.setData({
+            imagePath: filePath,
+            imageSizeText: this.formatFileSize(file && file.size),
+            errorMessage: ''
+          })
         }
       },
       fail: error => {
@@ -59,6 +54,47 @@ Page({
           })
         }
       }
+    })
+  },
+
+  cropImage() {
+    if (!this.data.imagePath || this.data.loading) return
+    const applyResult = result => {
+      const croppedPath = result && result.tempFilePath
+      if (!croppedPath) return
+      this.setData({
+        imagePath: croppedPath,
+        imageSizeText: '已手工裁剪',
+        errorMessage: ''
+      })
+    }
+    const fail = error => {
+      const message = String(error && error.errMsg ? error.errMsg : '')
+      if (!message.includes('cancel')) {
+        this.setData({
+          errorMessage: '无法打开图片裁剪，请升级微信后重试。'
+        })
+      }
+    }
+    if (typeof wx.editImage === 'function') {
+      wx.editImage({
+        src: this.data.imagePath,
+        success: applyResult,
+        fail
+      })
+      return
+    }
+    if (typeof wx.cropImage === 'function') {
+      wx.cropImage({
+        src: this.data.imagePath,
+        cropScale: '3:4',
+        success: applyResult,
+        fail
+      })
+      return
+    }
+    this.setData({
+      errorMessage: '当前微信版本不支持图片裁剪，请升级微信后重试。'
     })
   },
 
