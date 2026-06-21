@@ -46,17 +46,6 @@ async function healthCheck() {
   }
 }
 
-function readImageBase64(filePath) {
-  return new Promise((resolve, reject) => {
-    wx.getFileSystemManager().readFile({
-      filePath,
-      encoding: 'base64',
-      success: result => resolve(result.data),
-      fail: error => reject(new Error(error.errMsg || '无法读取题目图片'))
-    })
-  })
-}
-
 function imageMimeType(filePath) {
   const path = String(filePath || '').toLowerCase()
   if (path.includes('.png')) return 'image/png'
@@ -64,25 +53,64 @@ function imageMimeType(filePath) {
   return 'image/jpeg'
 }
 
+function uploadTemporaryImage(filePath) {
+  return new Promise((resolve, reject) => {
+    const suffix = imageMimeType(filePath) === 'image/png'
+      ? 'png'
+      : imageMimeType(filePath) === 'image/webp'
+        ? 'webp'
+        : 'jpg'
+    const cloudPath =
+      `analysis-temp/${Date.now()}-${Math.random().toString(36).slice(2)}.${suffix}`
+    const task = wx.cloud.uploadFile({
+      cloudPath,
+      filePath,
+      success: result => resolve(result.fileID),
+      fail: error => reject(new Error(error.errMsg || '上传临时图片失败'))
+    })
+    return task
+  })
+}
+
+function getTemporaryUrl(fileID) {
+  return wx.cloud.getTempFileURL({
+    fileList: [fileID]
+  }).then(result => {
+    const file = result.fileList && result.fileList[0]
+    if (!file || !file.tempFileURL) {
+      throw new Error(file?.errMsg || '无法获取临时图片地址')
+    }
+    return file.tempFileURL
+  })
+}
+
+function deleteTemporaryImage(fileID) {
+  if (!fileID) return Promise.resolve()
+  return wx.cloud.deleteFile({ fileList: [fileID] }).catch(error => {
+    console.warn('[analyzeImage] delete temp file failed:', error)
+  })
+}
+
 async function analyzeImage(filePath, textHint = '', onProgress) {
+  let fileID = ''
   try {
     if (typeof onProgress === 'function') {
       onProgress({ phase: 'uploading', progress: 10 })
     }
-    const imageBase64 = await readImageBase64(filePath)
+    fileID = await uploadTemporaryImage(filePath)
     if (typeof onProgress === 'function') {
-      onProgress({ phase: 'uploading', progress: 60 })
+      onProgress({ phase: 'uploading', progress: 70 })
     }
+    const imageUrl = await getTemporaryUrl(fileID)
     const response = await callContainer({
       path: '/api/analyze',
       method: 'POST',
       header: { 'content-type': 'application/json' },
       data: {
-        imageBase64,
-        imageMimeType: imageMimeType(filePath),
+        imageUrl,
         textHint,
         clientType: 'wechat-mini-program',
-        clientVersion: '1.2.0'
+        clientVersion: '1.2.1'
       }
     })
     if (typeof onProgress === 'function') {
@@ -106,6 +134,8 @@ async function analyzeImage(filePath, textHint = '', onProgress) {
   } catch (error) {
     console.error('[analyzeImage] callContainer failed:', error)
     throw new Error(error.errMsg || error.message || '微信云托管分析失败')
+  } finally {
+    await deleteTemporaryImage(fileID)
   }
 }
 
