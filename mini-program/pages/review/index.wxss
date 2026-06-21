@@ -221,8 +221,11 @@
 
 .rating-button {
   flex: 1;
+  width: 100%;
+  min-width: 0;
   min-height: 76rpx;
-  padding: 0 10rpx;
+  padding-right: 6rpx;
+  padding-left: 6rpx;
   font-size: 22rpx;
 }
 

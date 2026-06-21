@@ -42,5 +42,10 @@
   },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.camera": {
+      "desc": "用于拍摄需要 AI 分析的错题图片"
+    }
+  },
   "sitemapLocation": "sitemap.json"
 }

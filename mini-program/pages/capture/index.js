@@ -13,14 +13,14 @@ Page({
   },
 
   chooseFromCamera() {
-    this.chooseImage(['camera'])
+    this.chooseImage(['camera'], true)
   },
 
   chooseFromAlbum() {
-    this.chooseImage(['album'])
+    this.chooseImage(['album'], false)
   },
 
-  chooseImage(sourceType = ['camera', 'album']) {
+  chooseImage(sourceType = ['camera', 'album'], autoAnalyze = false) {
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
@@ -37,16 +37,26 @@ Page({
             })
             return
           }
-          this.setData({
-            imagePath: file.tempFilePath,
-            imageSizeText: this.formatFileSize(file.size),
-            errorMessage: ''
-          })
+          this.setData(
+            {
+              imagePath: file.tempFilePath,
+              imageSizeText: this.formatFileSize(file.size),
+              errorMessage: ''
+            },
+            () => {
+              if (autoAnalyze) this.analyze()
+            }
+          )
         }
       },
       fail: error => {
-        if (!String(error.errMsg || '').includes('cancel')) {
-          this.setData({ errorMessage: '无法读取图片，请检查相机或相册权限后重试。' })
+        const message = String(error.errMsg || '')
+        if (!message.includes('cancel')) {
+          this.setData({
+            errorMessage: /auth deny|authorize/i.test(message)
+              ? '相机权限未开启，请在微信设置中允许使用相机后重试。'
+              : '无法读取图片，请检查相机或相册权限后重试。'
+          })
         }
       }
     })
@@ -89,6 +99,7 @@ Page({
   },
 
   async analyze() {
+    if (this.data.loading) return
     if (!this.data.imagePath) {
       wx.showToast({ title: '请先拍照或选择图片', icon: 'none' })
       return
@@ -116,7 +127,7 @@ Page({
             loadingStep: analyzing ? 3 : 2,
             uploadProgress: progress.progress,
             loadingText: analyzing
-              ? 'AI 正在识别并整理错题…'
+              ? 'AI 正在云端识别并整理错题…'
               : `正在上传题目图片 ${progress.progress}%`
           })
         }
