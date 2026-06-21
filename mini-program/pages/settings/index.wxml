@@ -1,24 +1,13 @@
 <view class="page">
   <view class="page-title">设置</view>
-  <view class="page-subtitle">管理 AI 服务地址、本地数据与隐私选项。</view>
+  <view class="page-subtitle">管理微信云托管、本地数据与隐私选项。</view>
 
-  <view class="section-title">AI 后端</view>
+  <view class="section-title">AI 云服务</view>
   <view class="card">
-    <view class="field">
-      <text class="field-label">后端服务地址</text>
-      <input
-        class="input"
-        value="{{backendUrl}}"
-        placeholder="https://ai.example.com"
-        bindinput="onUrlInput"
-      />
-    </view>
-    <view class="hint">小程序只上传图片到你的后端，不保存模型 API Key。</view>
-    <view class="current-url">当前地址：{{backendUrl || '未配置'}}</view>
-    <view class="button-row">
-      <button class="secondary-button" loading="{{testing}}" bindtap="testBackend">测试连接</button>
-      <button class="primary-button" bindtap="saveBackend">保存地址</button>
-    </view>
+    <view class="field-label">微信云托管</view>
+    <view class="current-url">服务：{{cloudService}}</view>
+    <view class="hint">环境：{{cloudEnv}}。无需自建域名、HTTPS证书或ICP备案。</view>
+    <button class="primary-button" loading="{{testing}}" bindtap="testBackend">测试云服务</button>
     <view class="status" wx:if="{{status}}">{{status}}</view>
   </view>
 
@@ -39,7 +28,7 @@
     <button class="danger-button clear-button" bindtap="clearData">清空所有错题</button>
   </view>
 
-  <view class="section-title">账号与云同步</view>
+  <view class="section-title">账号与云同步（下一阶段）</view>
   <view class="card cloud-card">
     <view class="cloud-head">
       <view class="cloud-mark">{{loggedIn ? '✓' : '云'}}</view>

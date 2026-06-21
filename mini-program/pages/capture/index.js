@@ -1,5 +1,4 @@
 const { analyzeImage } = require('../../utils/api')
-const { getBackendUrl } = require('../../utils/config')
 
 Page({
   data: {
@@ -90,17 +89,6 @@ Page({
   },
 
   async analyze() {
-    if (!getBackendUrl()) {
-      wx.showModal({
-        title: '尚未配置后端',
-        content: '请先在设置页填写已部署的 AI 后端地址。',
-        confirmText: '去设置',
-        success: result => {
-          if (result.confirm) wx.switchTab({ url: '/pages/settings/index' })
-        }
-      })
-      return
-    }
     if (!this.data.imagePath) {
       wx.showToast({ title: '请先拍照或选择图片', icon: 'none' })
       return

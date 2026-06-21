@@ -6,8 +6,8 @@
 
   <view class="config-banner" wx:if="{{!backendConfigured}}" bindtap="goSettings">
     <view>
-      <view class="config-title">请先配置 AI 后端地址</view>
-      <view class="config-copy">配置后即可拍照识题和测试服务连接。</view>
+      <view class="config-title">AI 云服务尚未就绪</view>
+      <view class="config-copy">请在设置页测试微信云托管连接。</view>
     </view>
     <view class="config-action">去设置</view>
   </view>

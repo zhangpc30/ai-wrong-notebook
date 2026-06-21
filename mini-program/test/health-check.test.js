@@ -2,33 +2,32 @@ const test = require('node:test')
 const assert = require('node:assert/strict')
 
 function loadHealthCheck(response) {
-  const storage = { ai_backend_url: 'https://api.pczhang.press/' }
   global.wx = {
-    getStorageSync(key) {
-      return storage[key] || ''
-    },
-    setStorageSync(key, value) {
-      storage[key] = value
-    },
-    request(options) {
-      assert.equal(options.url, 'https://api.pczhang.press/health')
-      options.success(response)
+    cloud: {
+      callContainer(options) {
+        assert.deepEqual(options.config, {
+          env: 'prod-d5gzlt33v072ebddc'
+        })
+        assert.equal(options.path, '/health')
+        assert.equal(options.method, 'GET')
+        assert.equal(options.header['X-WX-SERVICE'], 'express-vm2i')
+        return Promise.resolve(response)
+      }
     }
   }
 
   const apiPath = require.resolve('../utils/api')
-  const configPath = require.resolve('../utils/config')
+  const cloudPath = require.resolve('../utils/cloud')
   delete require.cache[apiPath]
-  delete require.cache[configPath]
+  delete require.cache[cloudPath]
   return require('../utils/api').healthCheck
 }
 
-test('health check accepts the simplified backend JSON string', async () => {
+test('health check accepts simplified cloud container response', async () => {
   const healthCheck = loadHealthCheck({
     statusCode: 200,
     data: '{"status":"ok"}'
   })
-
   assert.deepEqual(await healthCheck(), { status: 'ok' })
 })
 

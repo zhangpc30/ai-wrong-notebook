@@ -1,5 +1,4 @@
 const { listQuestions } = require('../../utils/storage')
-const { getBackendUrl } = require('../../utils/config')
 const { buildStudyStats } = require('../../utils/review')
 const { getSyncState } = require('../../utils/sync')
 
@@ -74,7 +73,7 @@ Page({
         : 'local',
       weakModule: mostFrequent(questions.map(item => item.module)),
       commonReason: mostFrequent(questions.map(item => item.mistakeReason)),
-      backendConfigured: Boolean(getBackendUrl()),
+      backendConfigured: true,
       recent: sorted.slice(0, 3).map(item => ({
         ...item,
         displayTitle: item.questionText || '未命名错题',

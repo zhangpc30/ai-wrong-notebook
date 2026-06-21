@@ -1,154 +1,112 @@
-const { getBackendUrl } = require('./config')
+const { callContainer, CLOUD_ENV, CLOUD_SERVICE } = require('./cloud')
 const { normalizeAnalysis } = require('./schema')
-const { getAccessToken } = require('./auth')
 
-function parseErrorBody(data, fallback) {
+function parseData(value) {
+  if (typeof value !== 'string') return value
   try {
-    const parsed = typeof data === 'string' ? JSON.parse(data) : data
-    return parsed && parsed.error && parsed.error.message
-      ? parsed.error.message
-      : fallback
+    return JSON.parse(value)
   } catch (_) {
-    return fallback
+    return value
   }
 }
 
-function networkMessage(error, fallback) {
-  const message = String(error && error.errMsg ? error.errMsg : '')
-  if (/timeout/i.test(message)) return 'AI 分析超时，请稍后重试'
-  if (/fail|network|connect|domain/i.test(message)) return fallback
-  return message || fallback
+function parseErrorBody(data, fallback) {
+  const parsed = parseData(data)
+  if (parsed && parsed.error && parsed.error.message) return parsed.error.message
+  if (parsed && parsed.message) return parsed.message
+  return fallback
 }
 
-function healthCheck() {
-  const backendUrl = getBackendUrl()
-  if (!backendUrl) return Promise.reject(new Error('请先配置 AI 后端地址'))
-  const requestUrl = `${backendUrl}/health`
-  console.log('[healthCheck] backendUrl:', backendUrl)
-  console.log('[healthCheck] requestUrl:', requestUrl)
+async function healthCheck() {
+  console.log('[healthCheck] cloud container:', {
+    env: CLOUD_ENV,
+    service: CLOUD_SERVICE,
+    path: '/health'
+  })
+  try {
+    const response = await callContainer({ path: '/health', method: 'GET' })
+    const data = parseData(response.data)
+    console.log('[healthCheck] response:', {
+      statusCode: response.statusCode,
+      data
+    })
+    const statusOk = response.statusCode >= 200 && response.statusCode < 300
+    const bodyOk =
+      data === 'ok' ||
+      (data && data.status === 'ok') ||
+      (data && data.ok === true) ||
+      (data && data.success === true)
+    if (statusOk || bodyOk) return data || { status: 'ok' }
+    throw new Error(
+      parseErrorBody(data, `云托管响应异常：HTTP ${response.statusCode}`)
+    )
+  } catch (error) {
+    console.error('[healthCheck] callContainer failed:', error)
+    throw new Error(error.errMsg || error.message || '无法连接微信云托管')
+  }
+}
 
+function readImageBase64(filePath) {
   return new Promise((resolve, reject) => {
-    wx.request({
-      url: requestUrl,
-      method: 'GET',
-      timeout: 15000,
-      success(res) {
-        console.log('[healthCheck] response:', {
-          requestUrl,
-          statusCode: res.statusCode,
-          data: res.data
-        })
-
-        let data = res.data
-        if (typeof data === 'string') {
-          try {
-            data = JSON.parse(data)
-          } catch (error) {
-            console.warn('[healthCheck] JSON parse failed:', error)
-          }
-        }
-
-        const statusOk = res.statusCode >= 200 && res.statusCode < 300
-        const bodyOk =
-          data === 'ok' ||
-          (data && data.status === 'ok') ||
-          (data && data.ok === true) ||
-          (data && data.success === true)
-
-        if (statusOk || bodyOk) {
-          resolve(data || { status: 'ok' })
-          return
-        }
-
-        console.error('[healthCheck] unexpected response:', {
-          requestUrl,
-          statusCode: res.statusCode,
-          data
-        })
-        reject(new Error(
-          parseErrorBody(data, `AI 后端响应异常：HTTP ${res.statusCode}`)
-        ))
-      },
-      fail(error) {
-        console.error('[healthCheck] fail:', {
-          backendUrl,
-          requestUrl,
-          error
-        })
-        reject(new Error(
-          error && error.errMsg
-            ? error.errMsg
-            : networkMessage(error, '无法连接 AI 后端')
-        ))
-      }
+    wx.getFileSystemManager().readFile({
+      filePath,
+      encoding: 'base64',
+      success: result => resolve(result.data),
+      fail: error => reject(new Error(error.errMsg || '无法读取题目图片'))
     })
   })
 }
 
-function analyzeImage(filePath, textHint = '', onProgress) {
-  const backendUrl = getBackendUrl()
-  if (!backendUrl) return Promise.reject(new Error('请先在设置页配置 AI 后端地址'))
-  return new Promise((resolve, reject) => {
-    const task = wx.uploadFile({
-      url: `${backendUrl}/api/analyze`,
-      filePath,
-      name: 'image',
-      header: getAccessToken()
-        ? { Authorization: `Bearer ${getAccessToken()}` }
-        : {},
-      formData: {
+function imageMimeType(filePath) {
+  const path = String(filePath || '').toLowerCase()
+  if (path.includes('.png')) return 'image/png'
+  if (path.includes('.webp')) return 'image/webp'
+  return 'image/jpeg'
+}
+
+async function analyzeImage(filePath, textHint = '', onProgress) {
+  try {
+    if (typeof onProgress === 'function') {
+      onProgress({ phase: 'uploading', progress: 10 })
+    }
+    const imageBase64 = await readImageBase64(filePath)
+    if (typeof onProgress === 'function') {
+      onProgress({ phase: 'uploading', progress: 60 })
+    }
+    const response = await callContainer({
+      path: '/api/analyze',
+      method: 'POST',
+      header: { 'content-type': 'application/json' },
+      data: {
+        imageBase64,
+        imageMimeType: imageMimeType(filePath),
         textHint,
         clientType: 'wechat-mini-program',
-        clientVersion: '1.1.0'
-      },
-      timeout: 240000,
-      success(res) {
-        wx.hideNavigationBarLoading()
-        if (typeof onProgress === 'function') {
-          onProgress({ phase: 'analyzing', progress: 100 })
-        }
-        if (res.statusCode < 200 || res.statusCode >= 300) {
-          reject(new Error(parseErrorBody(res.data, `分析失败：HTTP ${res.statusCode}`)))
-          return
-        }
-        try {
-          const parsed = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
-          const result = normalizeAnalysis(
-            parsed && parsed.data && typeof parsed.data === 'object'
-              ? parsed.data
-              : parsed
-          )
-          if (!result.questionText) {
-            reject(new Error('后端未识别出有效题干，请重新拍摄或裁剪'))
-            return
-          }
-          resolve(result)
-        } catch (_) {
-          reject(new Error('后端返回内容不是有效 JSON'))
-        }
-      },
-      fail(error) {
-        wx.hideNavigationBarLoading()
-        reject(new Error(networkMessage(error, '图片上传失败，无法连接 AI 后端')))
+        clientVersion: '1.2.0'
       }
     })
-    task.onProgressUpdate(progress => {
-      if (typeof onProgress === 'function') {
-        onProgress({
-          phase: progress.progress < 100 ? 'uploading' : 'analyzing',
-          progress: progress.progress
-        })
-      }
-      if (progress.progress < 100) {
-        wx.showNavigationBarLoading()
-      } else {
-        wx.hideNavigationBarLoading()
-      }
-    })
-  })
+    if (typeof onProgress === 'function') {
+      onProgress({ phase: 'analyzing', progress: 100 })
+    }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw new Error(
+        parseErrorBody(response.data, `分析失败：HTTP ${response.statusCode}`)
+      )
+    }
+    const parsed = parseData(response.data)
+    const result = normalizeAnalysis(
+      parsed && parsed.data && typeof parsed.data === 'object'
+        ? parsed.data
+        : parsed
+    )
+    if (!result.questionText) {
+      throw new Error('后端未识别出有效题干，请重新拍摄或裁剪')
+    }
+    return result
+  } catch (error) {
+    console.error('[analyzeImage] callContainer failed:', error)
+    throw new Error(error.errMsg || error.message || '微信云托管分析失败')
+  }
 }
 
-module.exports = {
-  healthCheck,
-  analyzeImage
-}
+module.exports = { healthCheck, analyzeImage }

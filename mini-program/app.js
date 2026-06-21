@@ -1,18 +1,16 @@
-const { getBackendUrl } = require('./utils/config')
-const { isLoggedIn } = require('./utils/auth')
-const { syncNow } = require('./utils/sync')
+const { CLOUD_ENV, CLOUD_SERVICE, initCloud } = require('./utils/cloud')
 
 App({
   globalData: {
-    backendUrl: ''
+    cloudEnv: CLOUD_ENV,
+    cloudService: CLOUD_SERVICE
   },
 
   onLaunch() {
-    this.globalData.backendUrl = getBackendUrl()
-    if (isLoggedIn()) {
-      syncNow().catch(() => {
-        // 启动同步失败不影响离线使用，用户可在设置页手动重试。
-      })
+    try {
+      initCloud()
+    } catch (error) {
+      console.error('[cloud] init failed:', error)
     }
   }
 })
