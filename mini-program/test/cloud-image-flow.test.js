@@ -21,16 +21,25 @@ test('analysis uses a temporary cloud file instead of base64 request data', asyn
       },
       callContainer(options) {
         calls.push(['container', options])
-        assert.equal(options.path, '/api/analyze')
-        assert.equal(options.timeout, 240000)
-        assert.equal(options.data.imageUrl, 'https://example.tcb.qcloud.la/temp-question.jpg')
-        assert.equal(Object.hasOwn(options.data, 'imageBase64'), false)
+        if (options.path === '/api/analyze/jobs') {
+          assert.equal(options.timeout, 20000)
+          assert.equal(options.data.imageUrl, 'https://example.tcb.qcloud.la/temp-question.jpg')
+          assert.equal(Object.hasOwn(options.data, 'imageBase64'), false)
+          return Promise.resolve({
+            statusCode: 202,
+            data: { jobId: 'job-1', status: 'processing' }
+          })
+        }
+        assert.equal(options.path, '/api/analyze/jobs/job-1')
         return Promise.resolve({
           statusCode: 200,
           data: {
-            questionText: '测试题目',
-            knowledgePoints: [],
-            options: []
+            status: 'completed',
+            result: {
+              questionText: '测试题目',
+              knowledgePoints: [],
+              options: []
+            }
           }
         })
       },
@@ -52,6 +61,7 @@ test('analysis uses a temporary cloud file instead of base64 request data', asyn
   assert.deepEqual(calls.map(item => item[0]), [
     'upload',
     'url',
+    'container',
     'container',
     'delete'
   ])

@@ -109,6 +109,45 @@ function deleteTemporaryImage(fileID) {
   })
 }
 
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+async function pollAnalysisJob(jobId, onProgress) {
+  const deadline = Date.now() + 220000
+  let attempt = 0
+  while (Date.now() < deadline) {
+    attempt += 1
+    await wait(2000)
+    const response = await callContainer({
+      path: `/api/analyze/jobs/${jobId}`,
+      method: 'GET',
+      timeout: 20000
+    })
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw new Error(
+        parseErrorBody(response.data, `查询分析任务失败：HTTP ${response.statusCode}`)
+      )
+    }
+    const data = parseData(response.data)
+    console.log('[analyzeImage] stage=poll:response', {
+      attempt,
+      status: data && data.status
+    })
+    if (data && data.status === 'completed') return data.result
+    if (data && data.status === 'failed') {
+      throw new Error(data.message || '模型分析失败')
+    }
+    if (typeof onProgress === 'function') {
+      onProgress({
+        phase: 'analyzing',
+        progress: Math.min(95, 70 + attempt * 2)
+      })
+    }
+  }
+  throw new Error('AI分析时间过长，请稍后重试')
+}
+
 async function analyzeImage(filePath, textHint = '', onProgress) {
   let fileID = ''
   let stage = 'upload'
@@ -122,35 +161,41 @@ async function analyzeImage(filePath, textHint = '', onProgress) {
     }
     stage = 'temp-url'
     const imageUrl = await getTemporaryUrl(fileID)
-    stage = 'container'
-    console.log('[analyzeImage] stage=container:start', {
-      path: '/api/analyze',
+    stage = 'submit'
+    console.log('[analyzeImage] stage=submit:start', {
+      path: '/api/analyze/jobs',
       hasImageUrl: Boolean(imageUrl)
     })
     const response = await callContainer({
-      path: '/api/analyze',
+      path: '/api/analyze/jobs',
       method: 'POST',
+      timeout: 20000,
       header: { 'content-type': 'application/json' },
       data: {
         imageUrl,
         textHint,
         clientType: 'wechat-mini-program',
-        clientVersion: '1.2.1'
+        clientVersion: '1.3.0'
       }
     })
-    console.log('[analyzeImage] stage=container:response', {
+    console.log('[analyzeImage] stage=submit:response', {
       statusCode: response.statusCode,
       data: response.data
     })
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw new Error(
+        parseErrorBody(response.data, `创建分析任务失败：HTTP ${response.statusCode}`)
+      )
+    }
+    const submitted = parseData(response.data)
+    if (!submitted || !submitted.jobId) {
+      throw new Error('云托管未返回分析任务ID')
+    }
+    stage = 'poll'
+    const parsed = await pollAnalysisJob(submitted.jobId, onProgress)
     if (typeof onProgress === 'function') {
       onProgress({ phase: 'analyzing', progress: 100 })
     }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw new Error(
-        parseErrorBody(response.data, `分析失败：HTTP ${response.statusCode}`)
-      )
-    }
-    const parsed = parseData(response.data)
     const result = normalizeAnalysis(
       parsed && parsed.data && typeof parsed.data === 'object'
         ? parsed.data
@@ -166,7 +211,8 @@ async function analyzeImage(filePath, textHint = '', onProgress) {
     const stageLabel = {
       upload: '临时图片上传失败',
       'temp-url': '获取临时图片地址失败',
-      container: '微信云托管分析失败'
+      submit: '创建云端分析任务失败',
+      poll: '等待云端分析结果失败'
     }[stage] || '图片分析失败'
     throw new Error(message.startsWith(stageLabel)
       ? message
