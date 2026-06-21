@@ -22,6 +22,7 @@ test('analysis uses a temporary cloud file instead of base64 request data', asyn
       callContainer(options) {
         calls.push(['container', options])
         assert.equal(options.path, '/api/analyze')
+        assert.equal(options.timeout, 240000)
         assert.equal(options.data.imageUrl, 'https://example.tcb.qcloud.la/temp-question.jpg')
         assert.equal(Object.hasOwn(options.data, 'imageBase64'), false)
         return Promise.resolve({

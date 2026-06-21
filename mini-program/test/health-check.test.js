@@ -10,6 +10,7 @@ function loadHealthCheck(response) {
         })
         assert.equal(options.path, '/health')
         assert.equal(options.method, 'GET')
+        assert.equal(options.timeout, 240000)
         assert.equal(options.header['X-WX-SERVICE'], 'express-vm2i')
         return Promise.resolve(response)
       }

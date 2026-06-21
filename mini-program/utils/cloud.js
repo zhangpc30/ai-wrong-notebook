@@ -8,7 +8,13 @@ function initCloud() {
   wx.cloud.init({ env: CLOUD_ENV, traceUser: true })
 }
 
-function callContainer({ path, method = 'GET', data, header = {} }) {
+function callContainer({
+  path,
+  method = 'GET',
+  data,
+  header = {},
+  timeout = 240000
+}) {
   if (!wx.cloud || typeof wx.cloud.callContainer !== 'function') {
     return Promise.reject(new Error('当前微信版本不支持云托管，请升级微信后重试'))
   }
@@ -17,6 +23,8 @@ function callContainer({ path, method = 'GET', data, header = {} }) {
     path,
     method,
     data,
+    timeout,
+    verbose: true,
     header: {
       'X-WX-SERVICE': CLOUD_SERVICE,
       ...header
