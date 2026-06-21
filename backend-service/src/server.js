@@ -14,14 +14,13 @@ import {
   createImageSignature,
   HttpError,
   loginWithWechat,
-  optionalAuth,
   requireAuth,
 } from './auth.js';
 import { getDataDir, syncMistakes } from './store.js';
 
 const app = express();
 const port = Number(process.env.PORT ?? 8080);
-const maxImageBytes = Number(process.env.MAX_IMAGE_BYTES ?? 12 * 1024 * 1024);
+const maxImageBytes = Number(process.env.MAX_IMAGE_BYTES ?? 20 * 1024 * 1024);
 const maxRequestsPerMinute = Number(
   process.env.MAX_REQUESTS_PER_MINUTE ?? 30,
 );
@@ -31,11 +30,14 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '*')
   .filter(Boolean);
 
 app.disable('x-powered-by');
+app.disable('etag');
 app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
 app.use(helmet());
 app.use(
   cors({
-    origin: allowedOrigins.includes('*') ? true : allowedOrigins,
+    origin: allowedOrigins.includes('*') ? '*' : allowedOrigins,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
   }),
 );
 app.use(express.json({ limit: '16mb' }));
@@ -84,13 +86,12 @@ const upload = multer({
 });
 
 app.get('/health', (_request, response) => {
-  response.json({
-    status: 'ok',
-    service: 'public-exam-ai-backend',
-    modelConfigured: Boolean(process.env.MODEL),
-    authConfigured: Boolean(process.env.AUTH_SECRET),
-    syncEnabled: true,
+  response.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
   });
+  response.status(200).json({ status: 'ok' });
 });
 
 app.post('/api/auth/wechat', async (request, response, next) => {
@@ -195,10 +196,7 @@ app.get('/files/:userHash/:fileName', async (request, response, next) => {
   }
 });
 
-const analyzeAuth =
-  process.env.ANALYZE_AUTH_REQUIRED === 'true' ? requireAuth : optionalAuth;
-
-app.post('/api/analyze', analyzeAuth, upload.single('image'), async (request, response) => {
+app.post('/api/analyze', upload.single('image'), async (request, response) => {
   try {
     const textHint =
       typeof request.body?.textHint === 'string' ? request.body.textHint : '';

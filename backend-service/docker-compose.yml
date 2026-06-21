@@ -2,7 +2,7 @@ services:
   ai-backend:
     build: .
     ports:
-      - "8080:8080"
+      - "127.0.0.1:3000:8080"
     env_file:
       - .env
     volumes:

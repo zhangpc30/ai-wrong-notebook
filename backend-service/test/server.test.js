@@ -7,6 +7,9 @@ process.env.NODE_ENV = 'test';
 process.env.AUTH_SECRET = 'test-secret-that-is-long-enough-for-hmac';
 process.env.ALLOW_DEV_LOGIN = 'true';
 process.env.DATA_DIR = path.join(os.tmpdir(), `wrong-notebook-${process.pid}`);
+process.env.API_KEY = '';
+process.env.BASE_URL = '';
+process.env.MODEL = '';
 const { app } = await import('../src/server.js');
 
 test('health and request validation do not require a model call', async () => {
@@ -18,7 +21,24 @@ test('health and request validation do not require a model call', async () => {
   try {
     const health = await fetch(`${baseUrl}/health`);
     assert.equal(health.status, 200);
-    assert.equal((await health.json()).status, 'ok');
+    assert.deepEqual(await health.json(), { status: 'ok' });
+    assert.match(health.headers.get('cache-control') || '', /no-store/);
+    assert.equal(health.headers.get('etag'), null);
+
+    const preflight = await fetch(`${baseUrl}/api/analyze`, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'https://servicewechat.com',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'content-type,authorization',
+      },
+    });
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get('access-control-allow-origin'), '*');
+    assert.match(
+      preflight.headers.get('access-control-allow-methods') || '',
+      /GET,POST,OPTIONS/,
+    );
 
     const invalid = await fetch(`${baseUrl}/api/analyze`, {
       method: 'POST',
@@ -27,6 +47,28 @@ test('health and request validation do not require a model call', async () => {
     });
     assert.equal(invalid.status, 400);
     assert.equal((await invalid.json()).error.code, 'INVALID_REQUEST');
+
+    const multipart = new FormData();
+    multipart.append(
+      'image',
+      new Blob([Buffer.from([0xff, 0xd8, 0xff, 0xd9])], {
+        type: 'image/jpeg',
+      }),
+      'question.jpg',
+    );
+    multipart.append('textHint', 'compatibility test');
+    multipart.append('clientType', 'wechat-mini-program');
+    multipart.append('clientVersion', '1.0.0');
+    const anonymousUpload = await fetch(`${baseUrl}/api/analyze`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer stale-token-must-be-ignored' },
+      body: multipart,
+    });
+    assert.equal(anonymousUpload.status, 503);
+    assert.equal(
+      (await anonymousUpload.json()).error.code,
+      'BACKEND_NOT_CONFIGURED',
+    );
   } finally {
     await new Promise((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),

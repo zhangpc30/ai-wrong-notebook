@@ -20,6 +20,9 @@ curl http://localhost:8080/health
 生产环境可通过 `MAX_REQUESTS_PER_MINUTE`、`MAX_IMAGE_BYTES` 和
 `TRUST_PROXY` 控制基础限流、图片大小及反向代理识别。
 
+`GET /health` 和 `POST /api/analyze` 保持第一版 MVP 的匿名接口契约。
+登录和鉴权仅用于云同步接口，不影响基础健康检查和图片分析。
+
 ## 登录与云同步
 
 后端支持微信 `code2session` 登录、HMAC 签名访问令牌、用户数据隔离、
@@ -34,8 +37,7 @@ PUBLIC_BASE_URL=https://你的后端域名
 ```
 
 本地联调可设置 `ALLOW_DEV_LOGIN=true`，客户端传入 `devUserId`。
-生产环境必须关闭该开关。若希望分析接口也必须登录，可设置
-`ANALYZE_AUTH_REQUIRED=true`。
+生产环境必须关闭该开关。
 
 同步接口：
 
@@ -81,5 +83,5 @@ curl -X POST http://localhost:8080/api/analyze \
 
 ```bash
 docker build -t public-exam-ai-backend .
-docker run --rm -p 8080:8080 --env-file .env public-exam-ai-backend
+docker run --rm -p 127.0.0.1:3000:8080 --env-file .env public-exam-ai-backend
 ```
