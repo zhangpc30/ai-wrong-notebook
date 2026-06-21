@@ -62,20 +62,38 @@ function uploadTemporaryImage(filePath) {
         : 'jpg'
     const cloudPath =
       `analysis-temp/${Date.now()}-${Math.random().toString(36).slice(2)}.${suffix}`
+    console.log('[analyzeImage] stage=upload:start', {
+      cloudPath,
+      filePath
+    })
     const task = wx.cloud.uploadFile({
       cloudPath,
       filePath,
-      success: result => resolve(result.fileID),
-      fail: error => reject(new Error(error.errMsg || '上传临时图片失败'))
+      success: result => {
+        console.log('[analyzeImage] stage=upload:success', result)
+        resolve(result.fileID)
+      },
+      fail: error => {
+        console.error('[analyzeImage] stage=upload:fail', error)
+        const detail = error.errMsg || error.message || String(error)
+        reject(new Error(`临时图片上传失败：${detail}`))
+      }
     })
+    if (task && typeof task.onProgressUpdate === 'function') {
+      task.onProgressUpdate(progress => {
+        console.log('[analyzeImage] stage=upload:progress', progress.progress)
+      })
+    }
     return task
   })
 }
 
 function getTemporaryUrl(fileID) {
+  console.log('[analyzeImage] stage=temp-url:start', { fileID })
   return wx.cloud.getTempFileURL({
     fileList: [fileID]
   }).then(result => {
+    console.log('[analyzeImage] stage=temp-url:response', result)
     const file = result.fileList && result.fileList[0]
     if (!file || !file.tempFileURL) {
       throw new Error(file?.errMsg || '无法获取临时图片地址')
@@ -93,6 +111,7 @@ function deleteTemporaryImage(fileID) {
 
 async function analyzeImage(filePath, textHint = '', onProgress) {
   let fileID = ''
+  let stage = 'upload'
   try {
     if (typeof onProgress === 'function') {
       onProgress({ phase: 'uploading', progress: 10 })
@@ -101,7 +120,13 @@ async function analyzeImage(filePath, textHint = '', onProgress) {
     if (typeof onProgress === 'function') {
       onProgress({ phase: 'uploading', progress: 70 })
     }
+    stage = 'temp-url'
     const imageUrl = await getTemporaryUrl(fileID)
+    stage = 'container'
+    console.log('[analyzeImage] stage=container:start', {
+      path: '/api/analyze',
+      hasImageUrl: Boolean(imageUrl)
+    })
     const response = await callContainer({
       path: '/api/analyze',
       method: 'POST',
@@ -112,6 +137,10 @@ async function analyzeImage(filePath, textHint = '', onProgress) {
         clientType: 'wechat-mini-program',
         clientVersion: '1.2.1'
       }
+    })
+    console.log('[analyzeImage] stage=container:response', {
+      statusCode: response.statusCode,
+      data: response.data
     })
     if (typeof onProgress === 'function') {
       onProgress({ phase: 'analyzing', progress: 100 })
@@ -132,8 +161,16 @@ async function analyzeImage(filePath, textHint = '', onProgress) {
     }
     return result
   } catch (error) {
-    console.error('[analyzeImage] callContainer failed:', error)
-    throw new Error(error.errMsg || error.message || '微信云托管分析失败')
+    console.error('[analyzeImage] failed:', { stage, error })
+    const message = error.errMsg || error.message || String(error)
+    const stageLabel = {
+      upload: '临时图片上传失败',
+      'temp-url': '获取临时图片地址失败',
+      container: '微信云托管分析失败'
+    }[stage] || '图片分析失败'
+    throw new Error(message.startsWith(stageLabel)
+      ? message
+      : `${stageLabel}：${message}`)
   } finally {
     await deleteTemporaryImage(fileID)
   }
