@@ -23,20 +23,63 @@ function networkMessage(error, fallback) {
 function healthCheck() {
   const backendUrl = getBackendUrl()
   if (!backendUrl) return Promise.reject(new Error('请先配置 AI 后端地址'))
+  const requestUrl = `${backendUrl}/health`
+  console.log('[healthCheck] backendUrl:', backendUrl)
+  console.log('[healthCheck] requestUrl:', requestUrl)
+
   return new Promise((resolve, reject) => {
     wx.request({
-      url: `${backendUrl}/health`,
+      url: requestUrl,
       method: 'GET',
       timeout: 15000,
       success(res) {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data)
-        } else {
-          reject(new Error(parseErrorBody(res.data, `健康检查失败：HTTP ${res.statusCode}`)))
+        console.log('[healthCheck] response:', {
+          requestUrl,
+          statusCode: res.statusCode,
+          data: res.data
+        })
+
+        let data = res.data
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data)
+          } catch (error) {
+            console.warn('[healthCheck] JSON parse failed:', error)
+          }
         }
+
+        const statusOk = res.statusCode >= 200 && res.statusCode < 300
+        const bodyOk =
+          data === 'ok' ||
+          (data && data.status === 'ok') ||
+          (data && data.ok === true) ||
+          (data && data.success === true)
+
+        if (statusOk || bodyOk) {
+          resolve(data || { status: 'ok' })
+          return
+        }
+
+        console.error('[healthCheck] unexpected response:', {
+          requestUrl,
+          statusCode: res.statusCode,
+          data
+        })
+        reject(new Error(
+          parseErrorBody(data, `AI 后端响应异常：HTTP ${res.statusCode}`)
+        ))
       },
       fail(error) {
-        reject(new Error(networkMessage(error, '无法连接 AI 后端')))
+        console.error('[healthCheck] fail:', {
+          backendUrl,
+          requestUrl,
+          error
+        })
+        reject(new Error(
+          error && error.errMsg
+            ? error.errMsg
+            : networkMessage(error, '无法连接 AI 后端')
+        ))
       }
     })
   })

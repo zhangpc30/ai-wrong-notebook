@@ -63,11 +63,10 @@ Page({
     setBackendUrl(this.data.backendUrl)
     this.setData({ testing: true, status: '正在检查后端连接…' })
     try {
-      const result = await healthCheck()
-      this.setData({
-        status: `连接成功 · ${result.service || 'AI backend'}`
-      })
+      await healthCheck()
+      this.setData({ status: '连接成功' })
     } catch (error) {
+      console.error('[settings] testBackend failed:', error)
       this.setData({ status: `连接失败：${error.message || error}` })
     } finally {
       this.setData({ testing: false })
